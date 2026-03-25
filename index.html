@@ -1,0 +1,1430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClubSphere — MLRIT</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080808;
+  --s1: #111;
+  --s2: #1a1a1a;
+  --card: #141414;
+  --b: rgba(255,255,255,.07);
+  --b2: rgba(255,255,255,.13);
+  --tx: #f0f0f0;
+  --tx2: #888;
+  --tx3: #444;
+  --gr: #00e5a0;
+  --gr2: #00c488;
+  --gd: rgba(0,229,160,.08);
+  --came: #ff6b35;
+  --code: #00e5a0;
+  --scope: #b794f4;
+  --cie: #ffc107;
+  --red: #ff4444;
+  --mono: 'DM Sans', monospace;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body { background:var(--bg); color:var(--tx); font-family:'DM Sans',sans-serif; font-size:14px; line-height:1.6; overflow-x:hidden; min-height:100vh; }
+
+/* ── GRID BG ── */
+body::before { content:''; position:fixed; inset:0; background-image:radial-gradient(rgba(255,255,255,.03) 1px,transparent 1px); background-size:32px 32px; pointer-events:none; z-index:0; }
+
+/* ── SCREENS ── */
+.sc { display:none !important; }
+.sc.on { display:flex !important; flex-direction:column; }
+#sc-role.on { display:flex !important; align-items:center; justify-content:center; min-height:100vh; position:relative; z-index:1; }
+#sc-slogin.on { display:flex !important; align-items:center; justify-content:center; min-height:100vh; position:relative; z-index:1; }
+#sc-alogin.on { display:flex !important; align-items:center; justify-content:center; min-height:100vh; position:relative; z-index:1; }
+#sc-app.on { display:flex !important; flex-direction:column; min-height:100vh; }
+#sc-admin.on { display:flex !important; flex-direction:column; min-height:100vh; }
+
+/* ── SHARED COMPONENTS ── */
+::-webkit-scrollbar { width:4px; }
+::-webkit-scrollbar-thumb { background:var(--b2); border-radius:2px; }
+
+.card { background:var(--card); border:1px solid var(--b); border-radius:10px; }
+.lbl { font-family:'Syne',sans-serif; font-size:.62rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--gr); margin-bottom:8px; display:block; }
+.pg-title { font-family:'Syne',sans-serif; font-size:clamp(1.8rem,4vw,3rem); font-weight:800; letter-spacing:-.03em; line-height:1; margin-bottom:8px; }
+.pg-sub { font-size:.86rem; color:var(--tx2); max-width:440px; }
+.pg-hero { padding:88px 28px 32px; max-width:1100px; margin:0 auto; }
+.pg-wrap { max-width:1100px; margin:0 auto; padding:0 28px 80px; }
+.back-btn { display:inline-flex; align-items:center; gap:5px; color:var(--tx2); font-size:.74rem; cursor:pointer; border:1px solid var(--b); background:transparent; padding:5px 12px; border-radius:5px; margin-bottom:20px; font-family:'DM Sans',sans-serif; font-weight:500; transition:all .15s; }
+.back-btn:hover { color:var(--tx); border-color:var(--b2); }
+.divider { height:1px; background:var(--b); max-width:1100px; margin:0 auto; position:relative; z-index:1; }
+
+/* ── BUTTONS ── */
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:10px 22px; border-radius:6px; border:none; font-family:'DM Sans',sans-serif; font-size:.86rem; font-weight:600; cursor:pointer; transition:all .15s; }
+.btn-gr { background:var(--gr); color:#000; }
+.btn-gr:hover { background:var(--gr2); transform:translateY(-1px); }
+.btn-gh { background:transparent; color:var(--tx); border:1px solid var(--b2); }
+.btn-gh:hover { background:var(--s2); border-color:var(--b2); }
+.btn-scope { background:var(--scope); color:#000; }
+.btn-scope:hover { background:#a47fec; }
+.btn-full { width:100%; margin-top:14px; padding:11px; }
+
+/* ── FORM ── */
+.fg { margin-bottom:13px; }
+.fg label { display:block; font-size:.72rem; font-weight:600; color:var(--tx2); margin-bottom:5px; letter-spacing:.03em; }
+.fg input, .fg select, .fg textarea { width:100%; background:var(--s2); border:1px solid var(--b); border-radius:6px; padding:10px 13px; color:var(--tx); font-family:'DM Sans',sans-serif; font-size:.88rem; outline:none; transition:border-color .15s; resize:vertical; }
+.fg input:focus, .fg select:focus, .fg textarea:focus { border-color:var(--gr); }
+.fg input::placeholder, .fg textarea::placeholder { color:var(--tx3); }
+.fg select option { background:var(--s1); }
+.hint { font-size:.7rem; color:var(--tx3); margin-top:4px; }
+.hint span { color:var(--gr); }
+.err-msg { font-size:.76rem; color:var(--red); display:none; padding:9px 12px; background:rgba(255,68,68,.07); border-radius:6px; border:1px solid rgba(255,68,68,.18); margin-bottom:12px; }
+.err-msg.show { display:block; }
+.ok-msg { font-size:.76rem; color:var(--gr); display:none; padding:9px 12px; background:var(--gd); border-radius:6px; border:1px solid rgba(0,229,160,.2); margin-bottom:12px; }
+.ok-msg.show { display:block; }
+
+/* ── AUTH SCREENS ── */
+.auth-wrap { position:relative; z-index:2; width:100%; max-width:400px; padding:24px; }
+.auth-card { background:var(--card); border:1px solid var(--b); border-radius:14px; padding:36px; }
+.auth-logo { display:flex; align-items:center; gap:10px; margin-bottom:22px; }
+.auth-logo-mark { width:34px; height:34px; border-radius:8px; background:var(--gr); display:flex; align-items:center; justify-content:center; font-family:'Syne',sans-serif; font-size:.72rem; font-weight:800; color:#000; }
+.auth-logo-text { font-family:'Syne',sans-serif; font-size:1.1rem; font-weight:800; }
+.auth-title { font-family:'Syne',sans-serif; font-size:1.4rem; font-weight:800; margin-bottom:4px; }
+.auth-sub { font-size:.82rem; color:var(--tx2); margin-bottom:22px; }
+.auth-back { display:inline-flex; align-items:center; gap:5px; color:var(--tx2); font-size:.76rem; cursor:pointer; border:none; background:transparent; padding:0; margin-bottom:18px; font-family:'DM Sans',sans-serif; font-weight:500; transition:color .15s; }
+.auth-back:hover { color:var(--tx); }
+
+/* glow behind auth */
+.auth-glow { position:fixed; width:500px; height:500px; border-radius:50%; pointer-events:none; top:50%; left:50%; transform:translate(-50%,-50%); }
+
+/* ── ROLE SELECTOR ── */
+.role-inner { position:relative; z-index:2; text-align:center; width:100%; max-width:500px; padding:24px; }
+.role-logo { display:inline-flex; align-items:center; gap:10px; margin-bottom:24px; }
+.role-logo-mark { width:40px; height:40px; border-radius:10px; background:var(--gr); display:flex; align-items:center; justify-content:center; font-family:'Syne',sans-serif; font-size:.8rem; font-weight:800; color:#000; }
+.role-logo-text { font-family:'Syne',sans-serif; font-size:1.3rem; font-weight:800; }
+.role-title { font-family:'Syne',sans-serif; font-size:2rem; font-weight:800; letter-spacing:-.04em; margin-bottom:6px; }
+.role-sub { font-size:.88rem; color:var(--tx2); margin-bottom:36px; }
+.role-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.role-card { background:var(--card); border:1px solid var(--b); border-radius:12px; padding:28px 18px; cursor:pointer; text-align:center; color:var(--tx); font-family:'DM Sans',sans-serif; transition:border-color .2s, transform .2s, box-shadow .2s; }
+.role-card:hover { border-color:var(--gr); transform:translateY(-4px); box-shadow:0 16px 40px rgba(0,229,160,.1); }
+.role-card.org:hover { border-color:var(--scope); box-shadow:0 16px 40px rgba(183,148,244,.1); }
+.role-icon { font-size:2.2rem; margin-bottom:12px; }
+.role-name { font-family:'Syne',sans-serif; font-size:.95rem; font-weight:700; margin-bottom:5px; }
+.role-desc { font-size:.74rem; color:var(--tx2); line-height:1.5; }
+
+/* ── NAV ── */
+nav { position:fixed; top:0; left:0; right:0; z-index:100; height:58px; display:flex; align-items:center; justify-content:space-between; padding:0 28px; background:rgba(8,8,8,.94); backdrop-filter:blur(20px); border-bottom:1px solid var(--b); }
+.nav-logo { display:flex; align-items:center; gap:9px; cursor:pointer; }
+.nav-logo-mark { width:26px; height:26px; border-radius:6px; background:var(--gr); display:flex; align-items:center; justify-content:center; font-family:'Syne',sans-serif; font-size:.6rem; font-weight:800; color:#000; }
+.nav-logo-text { font-family:'Syne',sans-serif; font-size:.95rem; font-weight:800; }
+.nav-links { display:flex; gap:2px; list-style:none; align-items:center; }
+.nav-links a { color:var(--tx2); font-size:.78rem; font-weight:500; padding:6px 10px; border-radius:5px; cursor:pointer; transition:color .15s; }
+.nav-links a:hover, .nav-links a.on { color:var(--tx); }
+.nav-cta { background:var(--gr) !important; color:#000 !important; padding:7px 14px !important; border-radius:5px !important; font-weight:700 !important; transition:background .15s !important; }
+.nav-cta:hover { background:var(--gr2) !important; }
+.nav-r { display:flex; align-items:center; gap:8px; }
+.nav-user { display:flex; align-items:center; gap:7px; background:var(--s2); border:1px solid var(--b); border-radius:6px; padding:4px 10px 4px 5px; cursor:pointer; transition:border-color .15s; }
+.nav-user:hover { border-color:var(--b2); }
+.nav-av { width:22px; height:22px; border-radius:4px; background:var(--gr); color:#000; display:flex; align-items:center; justify-content:center; font-family:'Syne',sans-serif; font-size:.62rem; font-weight:800; }
+.nav-uname { font-size:.76rem; font-weight:600; }
+.nav-out { background:none; border:1px solid var(--b); color:var(--tx2); padding:5px 10px; border-radius:5px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:.74rem; font-weight:500; transition:all .15s; }
+.nav-out:hover { border-color:var(--b2); color:var(--tx); }
+.menu-btn { display:none; width:30px; height:30px; border:1px solid var(--b); background:none; border-radius:5px; cursor:pointer; flex-direction:column; align-items:center; justify-content:center; gap:4px; }
+.menu-btn span { display:block; width:13px; height:1.5px; background:var(--tx2); border-radius:1px; }
+
+/* ── DRAWER ── */
+.drawer-ov { display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:300; }
+.drawer-ov.on { display:block; }
+.drawer { position:fixed; top:0; right:0; bottom:0; width:250px; background:var(--s1); z-index:301; padding:20px; transform:translateX(100%); transition:transform .25s; border-left:1px solid var(--b); }
+.drawer.on { transform:translateX(0); }
+.drawer-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; }
+.drawer-logo { font-family:'Syne',sans-serif; font-weight:800; color:var(--gr); }
+.drawer-x { background:none; border:none; color:var(--tx2); font-size:1rem; cursor:pointer; }
+.drawer-links { display:flex; flex-direction:column; gap:3px; }
+.drawer-links a { display:block; padding:9px 12px; color:var(--tx2); font-size:.86rem; font-weight:500; border-radius:5px; transition:all .15s; cursor:pointer; }
+.drawer-links a:hover { background:var(--s2); color:var(--tx); }
+.drawer-foot { margin-top:20px; padding-top:16px; border-top:1px solid var(--b); }
+.drawer-uname { font-weight:700; font-size:.88rem; margin-bottom:2px; }
+.drawer-email { font-size:.7rem; color:var(--tx3); }
+.drawer-out { margin-top:12px; width:100%; padding:8px; background:transparent; border:1px solid var(--b); border-radius:5px; color:var(--tx2); font-size:.78rem; font-weight:500; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all .15s; }
+.drawer-out:hover { border-color:var(--b2); color:var(--tx); }
+
+/* ── MAIN CONTENT ── */
+.main { padding-top:58px; position:relative; z-index:1; flex:1; }
+
+/* ── HERO ── */
+.hero { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:80px 24px 60px; position:relative; overflow:hidden; }
+.hero-glow { position:absolute; width:800px; height:500px; border-radius:50%; background:radial-gradient(ellipse, rgba(0,229,160,.08) 0%, transparent 70%); top:0; left:50%; transform:translateX(-50%); pointer-events:none; }
+.hero-badge { display:inline-flex; align-items:center; gap:7px; background:var(--gd); border:1px solid rgba(0,229,160,.18); border-radius:4px; padding:5px 12px; font-size:.7rem; font-weight:700; color:var(--gr); letter-spacing:.08em; text-transform:uppercase; margin-bottom:20px; position:relative; z-index:1; }
+.badge-dot { width:5px; height:5px; border-radius:50%; background:var(--gr); animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+.hero h1 { font-family:'Syne',sans-serif; font-size:clamp(3rem,8vw,6.5rem); font-weight:800; line-height:.9; letter-spacing:-.05em; margin-bottom:18px; position:relative; z-index:1; }
+.hero h1 .accent { color:var(--gr); }
+.hero-sub { font-size:.96rem; color:var(--tx2); max-width:420px; margin-bottom:30px; position:relative; z-index:1; line-height:1.65; }
+.hero-acts { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; position:relative; z-index:1; }
+.h-stats { display:flex; background:var(--card); border:1px solid var(--b); border-radius:8px; overflow:hidden; margin-top:52px; position:relative; z-index:1; }
+.h-stat { padding:16px 28px; text-align:center; border-right:1px solid var(--b); }
+.h-stat:last-child { border-right:none; }
+.h-stat-n { font-family:'Syne',sans-serif; font-size:1.6rem; font-weight:800; letter-spacing:-.03em; }
+.h-stat-l { font-size:.62rem; color:var(--tx2); text-transform:uppercase; letter-spacing:.08em; font-weight:600; }
+.float-row { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:40px; width:100%; max-width:620px; position:relative; z-index:1; }
+.fc { background:var(--card); border:1px solid var(--b); border-radius:8px; padding:14px 12px; text-align:center; cursor:pointer; transition:border-color .2s, transform .2s; }
+.fc:nth-child(1) { animation:fa 3.5s ease-in-out infinite; }
+.fc:nth-child(2) { animation:fb 4s ease-in-out infinite .5s; }
+.fc:nth-child(3) { animation:fa 3.8s ease-in-out infinite 1s; }
+.fc:nth-child(4) { animation:fb 4.2s ease-in-out infinite 1.5s; }
+.fc:hover { border-color:var(--gr); transform:translateY(-5px) !important; }
+@keyframes fa { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-9px)} }
+@keyframes fb { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+.fc-icon { font-size:1.4rem; margin-bottom:6px; }
+.fc-name { font-family:'Syne',sans-serif; font-size:.72rem; font-weight:700; }
+.fc-sub { font-size:.6rem; color:var(--tx2); }
+
+/* ── SECTIONS ── */
+.sec { padding:56px 28px; max-width:1100px; margin:0 auto; position:relative; z-index:1; }
+.sec-hdr { margin-bottom:22px; }
+.sec-title { font-family:'Syne',sans-serif; font-size:1.6rem; font-weight:800; letter-spacing:-.03em; margin-bottom:4px; }
+.sec-sub { font-size:.82rem; color:var(--tx2); }
+.sec-row { display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:18px; }
+
+/* ── GRIDS ── */
+.g4 { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+.g2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.g3 { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+.g3g { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+
+/* ── CLUB MINI ── */
+.cmi { background:var(--card); border:1px solid var(--b); border-radius:8px; padding:18px; cursor:pointer; transition:all .2s; position:relative; overflow:hidden; }
+.cmi::after { content:''; position:absolute; top:0; left:0; right:0; height:2px; transform:scaleX(0); transition:transform .2s; transform-origin:left; }
+.cmi.came::after { background:var(--came); } .cmi.code::after { background:var(--code); }
+.cmi.scope::after { background:var(--scope); } .cmi.cie::after { background:var(--cie); }
+.cmi:hover { border-color:var(--b2); transform:translateY(-3px); }
+.cmi:hover::after { transform:scaleX(1); }
+.cmi-icon { font-size:1.7rem; margin-bottom:9px; }
+.cmi-name { font-family:'Syne',sans-serif; font-size:.88rem; font-weight:700; margin-bottom:2px; }
+.cmi.came .cmi-name{color:var(--came)} .cmi.code .cmi-name{color:var(--code)} .cmi.scope .cmi-name{color:var(--scope)} .cmi.cie .cmi-name{color:var(--cie)}
+.cmi-sub { font-size:.7rem; color:var(--tx2); margin-bottom:7px; line-height:1.4; }
+.cmi-mem { font-size:.66rem; color:var(--tx3); }
+.cmi-arr { position:absolute; top:12px; right:12px; color:var(--tx3); font-size:.78rem; transition:all .15s; }
+.cmi:hover .cmi-arr { color:var(--gr); transform:translateX(2px); }
+
+/* ── EVENT MINI ── */
+.ev-list { display:flex; flex-direction:column; gap:7px; }
+.ev-row { background:var(--card); border:1px solid var(--b); border-radius:8px; padding:12px 16px; display:flex; align-items:center; gap:14px; cursor:pointer; transition:all .15s; }
+.ev-row:hover { background:var(--s2); border-color:var(--b2); }
+.ev-dt { min-width:40px; height:40px; border-radius:6px; background:var(--gd); border:1px solid rgba(0,229,160,.18); display:flex; flex-direction:column; align-items:center; justify-content:center; flex-shrink:0; }
+.ev-dt .d { font-family:'Syne',sans-serif; font-weight:800; font-size:.95rem; color:var(--gr); line-height:1; }
+.ev-dt .m { font-size:.5rem; color:var(--gr); text-transform:uppercase; letter-spacing:.06em; font-weight:700; }
+.ev-inf { flex:1; }
+.ev-t { font-weight:600; font-size:.84rem; margin-bottom:1px; }
+.ev-m { font-size:.7rem; color:var(--tx2); }
+.badge { font-size:.62rem; padding:3px 8px; border-radius:4px; font-weight:700; white-space:nowrap; }
+.b-open { background:rgba(0,229,160,.1); color:var(--gr); border:1px solid rgba(0,229,160,.22); }
+.b-up { background:var(--s2); color:var(--tx2); border:1px solid var(--b); }
+.b-soon { background:rgba(255,193,7,.07); color:var(--cie); border:1px solid rgba(255,193,7,.2); }
+.ev-pr { text-align:right; min-width:52px; }
+.ev-prn { font-family:'Syne',sans-serif; font-weight:800; font-size:.84rem; color:var(--gr); }
+.ev-prl { font-size:.55rem; color:var(--tx3); text-transform:uppercase; letter-spacing:.05em; font-weight:600; }
+
+/* ── FEATURES ── */
+.feat { background:var(--card); border:1px solid var(--b); border-radius:8px; padding:20px; transition:all .2s; }
+.feat:hover { border-color:var(--b2); transform:translateY(-2px); }
+.feat-ico { font-size:1.2rem; margin-bottom:9px; }
+.feat-t { font-family:'Syne',sans-serif; font-size:.88rem; font-weight:700; margin-bottom:4px; }
+.feat-d { font-size:.76rem; color:var(--tx2); line-height:1.6; }
+
+/* ── CTA ── */
+.cta-box { background:linear-gradient(135deg,rgba(0,229,160,.06),rgba(0,229,160,.02)); border:1px solid rgba(0,229,160,.18); border-radius:12px; padding:48px; text-align:center; position:relative; overflow:hidden; }
+.cta-box::before { content:''; position:absolute; width:400px; height:400px; border-radius:50%; background:radial-gradient(rgba(0,229,160,.07),transparent 70%); bottom:-150px; left:50%; transform:translateX(-50%); }
+.cta-box h2 { font-family:'Syne',sans-serif; font-size:1.9rem; font-weight:800; letter-spacing:-.03em; margin-bottom:8px; position:relative; }
+.cta-box p { color:var(--tx2); max-width:340px; margin:0 auto 22px; font-size:.86rem; position:relative; }
+
+/* ── CLUBS PAGE ── */
+.ccard { background:var(--card); border:1px solid var(--b); border-radius:10px; overflow:hidden; transition:all .2s; }
+.ccard:hover { border-color:var(--b2); transform:translateY(-2px); }
+.cc-stripe { height:3px; }
+.cc-stripe.came{background:var(--came)} .cc-stripe.code{background:var(--code)} .cc-stripe.scope{background:var(--scope)} .cc-stripe.cie{background:var(--cie)}
+.cc-top { padding:18px 18px 12px; display:flex; gap:12px; }
+.cc-ico { width:38px; height:38px; border-radius:7px; background:var(--s2); border:1px solid var(--b); display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0; }
+.cc-name { font-family:'Syne',sans-serif; font-size:.92rem; font-weight:800; margin-bottom:1px; }
+.came .cc-name{color:var(--came)} .code .cc-name{color:var(--code)} .scope .cc-name{color:var(--scope)} .cie .cc-name{color:var(--cie)}
+.cc-full { font-size:.66rem; color:var(--tx3); margin-bottom:6px; }
+.cc-desc { font-size:.76rem; color:var(--tx2); line-height:1.6; }
+.cc-tags { padding:0 18px 12px; display:flex; flex-wrap:wrap; gap:5px; }
+.tag { font-size:.64rem; padding:2px 8px; border-radius:4px; font-weight:600; background:var(--s2); border:1px solid var(--b); color:var(--tx2); }
+.cc-foot { border-top:1px solid var(--b); padding:11px 18px; display:flex; align-items:center; justify-content:space-between; background:var(--bg); }
+.cc-stats { display:flex; gap:12px; }
+.cc-stat { font-size:.7rem; color:var(--tx2); }
+.cc-stat span { color:var(--tx); font-weight:700; }
+.join-btn { padding:7px 16px; border-radius:5px; border:none; font-family:'DM Sans',sans-serif; font-size:.76rem; font-weight:700; cursor:pointer; transition:all .15s; }
+
+/* ── EVENTS PAGE ── */
+.tabs { display:flex; background:var(--card); border:1px solid var(--b); border-radius:6px; padding:3px; width:fit-content; margin-bottom:18px; gap:2px; }
+.tab { background:none; border:none; padding:7px 14px; border-radius:5px; color:var(--tx2); font-family:'DM Sans',sans-serif; font-size:.76rem; font-weight:600; cursor:pointer; transition:all .15s; }
+.tab.on { background:var(--s2); color:var(--tx); }
+.tab:hover:not(.on) { color:var(--tx); }
+.tbc { display:none; } .tbc.on { display:block; }
+.evf-list { display:flex; flex-direction:column; gap:7px; }
+.evf-row { background:var(--card); border:1px solid var(--b); border-radius:8px; padding:14px 18px; display:flex; align-items:center; gap:14px; transition:all .15s; border-left:3px solid transparent; }
+.evf-row:hover { background:var(--s2); border-color:var(--b2); }
+.evf-row[data-club="code"]{border-left-color:var(--code)} .evf-row[data-club="came"]{border-left-color:var(--came)} .evf-row[data-club="scope"]{border-left-color:var(--scope)} .evf-row[data-club="cie"]{border-left-color:var(--cie)}
+.evf-dt { min-width:44px; height:44px; border-radius:6px; background:var(--gd); border:1px solid rgba(0,229,160,.2); display:flex; flex-direction:column; align-items:center; justify-content:center; flex-shrink:0; }
+.evf-dt .d { font-family:'Syne',sans-serif; font-weight:800; font-size:1rem; color:var(--gr); line-height:1; }
+.evf-dt .m { font-size:.55rem; color:var(--gr); text-transform:uppercase; letter-spacing:.06em; font-weight:700; }
+.evf-info { flex:1; }
+.evf-t { font-weight:600; font-size:.88rem; margin-bottom:2px; }
+.evf-m { font-size:.7rem; color:var(--tx2); }
+.evf-r { display:flex; flex-direction:column; align-items:flex-end; gap:4px; min-width:110px; }
+.evf-prize { font-family:'Syne',sans-serif; font-weight:800; font-size:.86rem; color:var(--gr); }
+.evf-prl { font-size:.54rem; color:var(--tx3); text-transform:uppercase; letter-spacing:.06em; font-weight:700; }
+.reg-btn { background:var(--gr); color:#000; border:none; padding:5px 12px; border-radius:5px; font-family:'DM Sans',sans-serif; font-size:.72rem; font-weight:700; cursor:pointer; transition:all .15s; }
+.reg-btn:hover { background:var(--gr2); }
+
+/* ── ANNOUNCEMENTS ── */
+.ann-fils { display:flex; gap:5px; margin-bottom:16px; flex-wrap:wrap; }
+.af { background:var(--card); border:1px solid var(--b); padding:4px 12px; border-radius:4px; font-size:.7rem; font-weight:600; color:var(--tx2); cursor:pointer; transition:all .15s; }
+.af.on,.af:hover { color:var(--tx); background:var(--s2); border-color:var(--b2); }
+.ann-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+.ann-card { background:var(--card); border:1px solid var(--b); border-radius:8px; padding:18px; transition:all .15s; border-left:3px solid transparent; }
+.ann-card:hover { background:var(--s2); }
+.ann-card[data-club="code"]{border-left-color:var(--code)} .ann-card[data-club="came"]{border-left-color:var(--came)} .ann-card[data-club="scope"]{border-left-color:var(--scope)} .ann-card[data-club="cie"]{border-left-color:var(--cie)} .ann-card[data-club="general"]{border-left-color:var(--gr)}
+.ann-tag { font-size:.64rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; margin-bottom:7px; display:block; }
+.ann-title { font-family:'Syne',sans-serif; font-size:.88rem; font-weight:700; margin-bottom:5px; line-height:1.4; }
+.ann-text { font-size:.76rem; color:var(--tx2); line-height:1.6; margin-bottom:8px; }
+.ann-date { font-size:.66rem; color:var(--tx3); }
+
+/* ── LEADERBOARD ── */
+.s4 { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:18px; }
+.scard { background:var(--card); border:1px solid var(--b); border-radius:8px; padding:16px; text-align:center; }
+.scard-n { font-family:'Syne',sans-serif; font-size:1.6rem; font-weight:800; letter-spacing:-.03em; margin-bottom:2px; }
+.scard-l { font-size:.62rem; color:var(--tx2); text-transform:uppercase; letter-spacing:.08em; font-weight:600; }
+.podium { display:grid; grid-template-columns:1fr 1.12fr 1fr; gap:10px; margin-bottom:16px; align-items:end; }
+.pod { background:var(--card); border:1px solid var(--b); border-radius:8px; padding:18px 12px; text-align:center; }
+.pod.p1 { border-color:rgba(255,193,7,.2); background:linear-gradient(180deg,rgba(255,193,7,.04),var(--card)); }
+.pod-medal { font-size:1.5rem; margin-bottom:5px; }
+.pod-name { font-family:'Syne',sans-serif; font-size:.86rem; font-weight:700; margin-bottom:1px; }
+.pod-roll { font-size:.62rem; color:var(--tx3); margin-bottom:5px; }
+.pod-club { font-size:.7rem; font-weight:600; margin-bottom:6px; }
+.pod-pts { font-family:'Syne',sans-serif; font-weight:800; font-size:1.3rem; color:var(--gr); }
+.pod-l { font-size:.56rem; color:var(--tx3); text-transform:uppercase; letter-spacing:.06em; font-weight:700; }
+.lb-tbl { background:var(--card); border:1px solid var(--b); border-radius:8px; overflow:hidden; }
+.lb-hdr { display:grid; grid-template-columns:44px 1fr 110px 90px 100px; padding:10px 18px; border-bottom:1px solid var(--b); font-size:.62rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--tx3); background:var(--bg); }
+.lb-row { display:grid; grid-template-columns:44px 1fr 110px 90px 100px; padding:12px 18px; border-bottom:1px solid var(--b); align-items:center; transition:background .12s; }
+.lb-row:last-child { border-bottom:none; }
+.lb-row:hover { background:var(--s2); }
+.lb-rk { font-family:'Syne',sans-serif; font-weight:800; font-size:.88rem; color:var(--tx3); }
+.lb-rk.gld{color:#f0b429} .lb-rk.slv{color:#9aa5b4} .lb-rk.brz{color:#c98a5a}
+.lb-st { font-weight:600; font-size:.82rem; }
+.lb-st small { display:block; font-size:.66rem; color:var(--tx3); margin-top:1px; }
+.lb-cl { font-size:.76rem; font-weight:500; }
+.lb-pt { font-family:'Syne',sans-serif; font-weight:800; font-size:.86rem; color:var(--gr); }
+.lb-bd { display:flex; gap:3px; flex-wrap:wrap; }
+.mbadge { font-size:.6rem; padding:2px 6px; border-radius:4px; background:var(--gd); border:1px solid rgba(0,229,160,.18); color:var(--gr); font-weight:700; }
+
+/* ── GALLERY ── */
+.gfil { display:flex; gap:5px; margin-bottom:16px; flex-wrap:wrap; }
+.gf { background:var(--card); border:1px solid var(--b); padding:4px 12px; border-radius:4px; font-size:.7rem; font-weight:600; color:var(--tx2); cursor:pointer; transition:all .15s; }
+.gf.on,.gf:hover { color:var(--tx); background:var(--s2); border-color:var(--b2); }
+.gal-item { border-radius:8px; overflow:hidden; cursor:pointer; position:relative; aspect-ratio:4/3; border:1px solid var(--b); transition:all .2s; }
+.gal-item:hover { border-color:var(--gr); transform:scale(1.02); }
+.gal-img { width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; }
+.gal-ov { position:absolute; inset:0; background:rgba(0,0,0,.78); display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0; transition:opacity .2s; gap:4px; }
+.gal-item:hover .gal-ov { opacity:1; }
+.gal-ot { font-family:'Syne',sans-serif; font-size:.84rem; font-weight:700; color:#fff; text-align:center; padding:0 12px; }
+.gal-os { font-size:.7rem; color:rgba(255,255,255,.55); }
+
+/* ── PROFILE ── */
+.prof-top { display:flex; align-items:center; gap:16px; padding:22px; background:var(--card); border:1px solid var(--b); border-radius:8px; margin-bottom:14px; }
+.prof-av { width:60px; height:60px; border-radius:8px; background:var(--gr); color:#000; display:flex; align-items:center; justify-content:center; font-family:'Syne',sans-serif; font-size:1.5rem; font-weight:800; flex-shrink:0; }
+.prof-name { font-family:'Syne',sans-serif; font-weight:800; font-size:1.1rem; letter-spacing:-.02em; margin-bottom:2px; }
+.prof-email { font-size:.76rem; color:var(--tx2); }
+.prof-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.prof-sec { background:var(--card); border:1px solid var(--b); border-radius:8px; padding:18px; }
+.prof-sec-t { font-family:'Syne',sans-serif; font-size:.72rem; font-weight:700; color:var(--tx2); text-transform:uppercase; letter-spacing:.1em; margin-bottom:12px; }
+.prof-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:14px; }
+.ps { background:var(--card); border:1px solid var(--b); border-radius:6px; padding:12px; text-align:center; }
+.ps-n { font-family:'Syne',sans-serif; font-weight:800; font-size:1.3rem; color:var(--gr); }
+.ps-l { font-size:.6rem; color:var(--tx3); text-transform:uppercase; letter-spacing:.07em; font-weight:600; }
+.cp { display:flex; align-items:center; gap:8px; padding:8px 10px; background:var(--s2); border-radius:5px; margin-bottom:5px; border:1px solid var(--b); }
+.cp:last-child { margin-bottom:0; }
+.ep { padding:7px 0; border-bottom:1px solid var(--b); display:flex; align-items:center; gap:8px; }
+.ep:last-child { border-bottom:none; }
+.ep-dot { width:5px; height:5px; border-radius:50%; background:var(--gr); flex-shrink:0; }
+.ep-t { font-size:.8rem; font-weight:500; flex:1; }
+.ep-d { font-size:.64rem; color:var(--tx3); }
+
+/* ── ADMIN LAYOUT ── */
+.admin-layout { display:flex; min-height:calc(100vh - 58px); }
+.admin-sb { width:210px; background:var(--s1); border-right:1px solid var(--b); position:fixed; top:58px; left:0; bottom:0; display:flex; flex-direction:column; z-index:50; overflow-y:auto; }
+.admin-sb-head { padding:16px; border-bottom:1px solid var(--b); }
+.admin-badge { display:inline-flex; align-items:center; gap:5px; font-size:.7rem; font-weight:700; padding:3px 8px; border-radius:4px; border:1px solid; }
+.admin-nav { display:flex; flex-direction:column; gap:2px; padding:10px 8px; flex:1; }
+.admin-nav-btn { display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:5px; cursor:pointer; color:var(--tx2); font-size:.8rem; font-weight:500; border:none; background:none; font-family:'DM Sans',sans-serif; width:100%; text-align:left; transition:all .15s; }
+.admin-nav-btn:hover, .admin-nav-btn.on { background:var(--s2); color:var(--tx); }
+.admin-sb-foot { padding:12px 14px; border-top:1px solid var(--b); }
+.admin-sb-uname { font-weight:700; font-size:.78rem; margin-bottom:1px; }
+.admin-sb-email { font-size:.64rem; color:var(--tx3); }
+.admin-sb-out { margin-top:10px; width:100%; padding:7px; background:transparent; border:1px solid var(--b); border-radius:5px; color:var(--tx2); font-size:.74rem; font-weight:500; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all .15s; }
+.admin-sb-out:hover { border-color:var(--b2); color:var(--tx); }
+.admin-content { margin-left:210px; padding:28px; flex:1; }
+.admin-topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; padding-bottom:18px; border-bottom:1px solid var(--b); }
+.admin-topbar-t { font-family:'Syne',sans-serif; font-size:1.2rem; font-weight:800; letter-spacing:-.02em; }
+.admin-topbar-s { font-size:.74rem; color:var(--tx2); margin-top:2px; }
+.admin-sec { display:none; } .admin-sec.on { display:block; }
+.a-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:20px; }
+.astat { background:var(--card); border:1px solid var(--b); border-radius:8px; padding:14px 16px; }
+.astat-n { font-family:'Syne',sans-serif; font-size:1.5rem; font-weight:800; letter-spacing:-.03em; margin-bottom:2px; }
+.astat-l { font-size:.62rem; color:var(--tx2); text-transform:uppercase; letter-spacing:.08em; font-weight:600; }
+.aform { background:var(--card); border:1px solid var(--b); border-radius:8px; padding:20px; margin-bottom:18px; }
+.aform-t { font-family:'Syne',sans-serif; font-size:.9rem; font-weight:700; margin-bottom:14px; }
+.ag2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.ag3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+.atbl-wrap { background:var(--card); border:1px solid var(--b); border-radius:8px; overflow:hidden; }
+.atbl-head { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-bottom:1px solid var(--b); }
+.atbl-title { font-family:'Syne',sans-serif; font-size:.84rem; font-weight:700; }
+.atbl-cnt { font-size:.7rem; color:var(--tx2); }
+.atbl { width:100%; border-collapse:collapse; }
+.atbl th { padding:9px 14px; text-align:left; font-size:.62rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--tx3); background:var(--bg); border-bottom:1px solid var(--b); }
+.atbl td { padding:11px 14px; font-size:.78rem; border-bottom:1px solid var(--b); }
+.atbl tr:last-child td { border-bottom:none; }
+.atbl tr:hover td { background:var(--s2); }
+.atbl td small { display:block; font-size:.66rem; color:var(--tx3); margin-top:1px; }
+.del-btn { background:none; border:none; color:var(--tx3); cursor:pointer; font-size:.76rem; padding:3px 7px; border-radius:4px; transition:all .15s; }
+.del-btn:hover { background:rgba(255,68,68,.1); color:var(--red); }
+.empty-row { padding:32px; text-align:center; color:var(--tx3); font-size:.78rem; }
+.abadge { font-size:.62rem; padding:2px 7px; border-radius:4px; font-weight:700; }
+.abadge.open { background:rgba(0,229,160,.1); color:var(--gr); }
+.abadge.up { background:var(--s2); color:var(--tx2); }
+
+/* ── MODAL ── */
+.modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,.8); backdrop-filter:blur(5px); z-index:400; align-items:center; justify-content:center; padding:24px; }
+.modal-bg.on { display:flex; }
+.modal { background:var(--card); border:1px solid var(--b); border-radius:12px; padding:26px 28px; width:100%; max-width:440px; max-height:90vh; overflow-y:auto; }
+.modal-t { font-family:'Syne',sans-serif; font-size:1rem; font-weight:800; letter-spacing:-.01em; margin-bottom:2px; }
+.modal-s { font-size:.76rem; color:var(--tx2); margin-bottom:16px; }
+.modal-acts { display:flex; gap:8px; margin-top:14px; }
+.cancel-btn { background:transparent; border:1px solid var(--b); color:var(--tx2); padding:8px 16px; border-radius:5px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:.78rem; font-weight:500; transition:all .15s; }
+.cancel-btn:hover { border-color:var(--b2); color:var(--tx); }
+.succ-msg { display:none; text-align:center; padding:10px 0; }
+.succ-ico { font-size:2rem; margin-bottom:8px; }
+.succ-msg h3 { font-family:'Syne',sans-serif; font-size:1rem; font-weight:800; margin-bottom:5px; }
+.succ-msg p { color:var(--tx2); font-size:.78rem; line-height:1.65; max-width:290px; margin:0 auto; }
+
+/* ── TOAST ── */
+.toast { position:fixed; bottom:18px; right:18px; background:var(--card); border:1px solid var(--b2); border-radius:8px; padding:10px 15px; font-size:.78rem; color:var(--tx); z-index:500; transform:translateY(60px); opacity:0; transition:all .3s cubic-bezier(.34,1.56,.64,1); display:flex; align-items:center; gap:7px; font-weight:500; }
+.toast.on { transform:translateY(0); opacity:1; }
+.toast-dot { width:5px; height:5px; border-radius:50%; background:var(--gr); }
+
+/* ── FOOTER ── */
+footer { border-top:1px solid var(--b); padding:26px 28px; display:flex; align-items:center; justify-content:space-between; max-width:1100px; margin:0 auto; flex-wrap:wrap; gap:12px; position:relative; z-index:1; }
+.f-brand { font-family:'Syne',sans-serif; font-size:.82rem; font-weight:700; color:var(--tx2); }
+.f-links { display:flex; gap:16px; list-style:none; }
+.f-links a { color:var(--tx3); font-size:.7rem; cursor:pointer; transition:color .15s; }
+.f-links a:hover { color:var(--tx); }
+.f-copy { font-size:.68rem; color:var(--tx3); }
+
+@media(max-width:768px){
+  nav { padding:0 16px; }
+  .nav-links { display:none; }
+  .menu-btn { display:flex; }
+  .g4,.g2,.g3,.g3g,.ann-grid,.prof-grid { grid-template-columns:1fr; }
+  .podium { grid-template-columns:1fr; }
+  .s4 { grid-template-columns:repeat(2,1fr); }
+  .lb-hdr,.lb-row { grid-template-columns:40px 1fr 75px; }
+  .lb-cl,.lb-bd { display:none; }
+  .h-stats { flex-wrap:wrap; }
+  .h-stat { min-width:50%; border-right:none; border-bottom:1px solid var(--b); }
+  .h-stat:last-child { border-bottom:none; }
+  .float-row { grid-template-columns:repeat(2,1fr); }
+  .pg-hero { padding:82px 16px 24px; }
+  .pg-wrap { padding:0 16px 60px; }
+  .sec { padding:40px 16px; }
+  .admin-sb { transform:translateX(-100%); transition:transform .25s; }
+  .admin-sb.open { transform:translateX(0); }
+  .admin-content { margin-left:0; padding:16px; }
+  .a-stats { grid-template-columns:repeat(2,1fr); }
+  .ag2,.ag3 { grid-template-columns:1fr; }
+  .role-grid { grid-template-columns:1fr; }
+  .float-row { grid-template-columns:repeat(2,1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- DRAWER -->
+<div class="drawer-ov" id="dov" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <span class="drawer-logo">ClubSphere</span>
+    <button class="drawer-x" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="drawer-links" id="drawer-links"></div>
+  <div class="drawer-foot">
+    <div class="drawer-uname" id="d-uname">—</div>
+    <div class="drawer-email" id="d-email">—</div>
+    <button class="drawer-out" onclick="doLogout()">Sign Out</button>
+  </div>
+</div>
+
+<!-- ROLE SELECTOR -->
+<div id="sc-role" class="sc on">
+  <div style="position:absolute;width:700px;height:500px;border-radius:50%;background:radial-gradient(rgba(0,229,160,.07),transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:0"></div>
+  <div class="role-inner">
+    <div class="role-logo">
+      <div class="role-logo-mark">CS</div>
+      <span class="role-logo-text">ClubSphere</span>
+    </div>
+    <div class="role-title">Who are you?</div>
+    <div class="role-sub">Select your role to continue to ClubSphere — MLRIT</div>
+    <div class="role-grid">
+      <button class="role-card" type="button" onclick="goTo('sc-slogin')">
+        <div class="role-icon">🎓</div>
+        <div class="role-name">Student</div>
+        <div class="role-desc">Browse clubs, register for events, and track your activities</div>
+      </button>
+      <button class="role-card org" type="button" onclick="goTo('sc-alogin')">
+        <div class="role-icon">🏛️</div>
+        <div class="role-name">Club Organizer</div>
+        <div class="role-desc">Post events, announcements, and manage your club</div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- STUDENT LOGIN -->
+<div id="sc-slogin" class="sc">
+  <div class="auth-glow" style="background:radial-gradient(rgba(0,229,160,.08),transparent 70%)"></div>
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <button class="auth-back" type="button" onclick="goTo('sc-role')">← Back</button>
+      <div class="auth-logo">
+        <div class="auth-logo-mark">CS</div>
+        <span class="auth-logo-text">ClubSphere</span>
+      </div>
+      <div class="auth-title">Student Sign In</div>
+      <div class="auth-sub">Use your <span style="color:var(--gr)">@mlrit.ac.in</span> email — account created on first sign in</div>
+      <div class="err-msg" id="lerr"></div>
+      <div class="fg"><label>Email Address</label>
+        <input type="email" id="lemail" placeholder="name@mlrit.ac.in">
+        <div class="hint">Only <span>@mlrit.ac.in</span> addresses allowed</div>
+      </div>
+      <div class="fg"><label>Password</label>
+        <input type="password" id="lpass" placeholder="Enter password">
+      </div>
+      <button class="btn btn-gr btn-full" type="button" onclick="doLogin()">Sign In →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN LOGIN -->
+<div id="sc-alogin" class="sc">
+  <div class="auth-glow" style="background:radial-gradient(rgba(183,148,244,.08),transparent 70%)"></div>
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <button class="auth-back" type="button" onclick="goTo('sc-role')">← Back</button>
+      <div class="auth-logo">
+        <div class="auth-logo-mark" style="background:var(--scope)">CS</div>
+        <span class="auth-logo-text">Club Organizer</span>
+      </div>
+      <div class="auth-title">Organizer Sign In</div>
+      <div class="auth-sub">Sign in with your coordinator credentials</div>
+      <div class="err-msg" id="aerr"></div>
+      <div class="fg"><label>Coordinator Email</label>
+        <input type="email" id="aemail" placeholder="coordinator@mlrit.ac.in">
+      </div>
+      <div class="fg"><label>Password</label>
+        <input type="password" id="apass" placeholder="Admin password">
+      </div>
+      <div class="fg"><label>Select Your Club</label>
+        <select id="aclub">
+          <option value="">-- Choose your club --</option>
+          <option value="came">CAME Club</option>
+          <option value="code">Code Club</option>
+          <option value="scope">SCOPE Club</option>
+          <option value="cie">CIE #</option>
+        </select>
+      </div>
+      <button class="btn btn-scope btn-full" type="button" onclick="doAdminLogin()">Sign In →</button>
+      <div style="margin-top:10px;font-size:.68rem;color:var(--tx3);text-align:center">Contact admin coordinator for credentials</div>
+    </div>
+  </div>
+</div>
+
+<!-- STUDENT APP -->
+<div id="sc-app" class="sc">
+  <nav>
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="menu-btn" type="button" onclick="openDrawer()"><span></span><span></span><span></span></button>
+      <div class="nav-logo" onclick="showPage('home')">
+        <div class="nav-logo-mark">CS</div>
+        <span class="nav-logo-text">ClubSphere</span>
+      </div>
+    </div>
+    <ul class="nav-links">
+      <li><a onclick="showPage('home')" id="nl-home">Home</a></li>
+      <li><a onclick="showPage('clubs')" id="nl-clubs">Clubs</a></li>
+      <li><a onclick="showPage('events')" id="nl-events">Events</a></li>
+      <li><a onclick="showPage('announcements')" id="nl-ann">Announcements</a></li>
+      <li><a onclick="showPage('leaderboard')" id="nl-lb">Leaderboard</a></li>
+      <li><a onclick="showPage('gallery')" id="nl-gal">Gallery</a></li>
+      <li><a onclick="openJoin()" class="nav-cta">Join a Club</a></li>
+    </ul>
+    <div class="nav-r">
+      <div class="nav-user" onclick="showPage('profile')">
+        <div class="nav-av" id="nav-av">S</div>
+        <span class="nav-uname" id="nav-un">Student</span>
+      </div>
+      <button class="nav-out" type="button" onclick="doLogout()">Sign out</button>
+    </div>
+  </nav>
+  <div class="main" id="app-page"></div>
+</div>
+
+<!-- ADMIN APP -->
+<div id="sc-admin" class="sc">
+  <nav>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="nav-logo">
+        <div class="nav-logo-mark" style="background:var(--scope)">CS</div>
+        <span class="nav-logo-text">Admin Panel</span>
+      </div>
+    </div>
+    <div class="nav-r">
+      <span id="admin-club-label" style="font-size:.76rem;font-weight:700;color:var(--scope)"></span>
+      <button class="nav-out" type="button" onclick="doAdminLogout()">Sign out</button>
+    </div>
+  </nav>
+  <div class="main">
+    <div class="admin-layout">
+      <div class="admin-sb" id="admin-sb">
+        <div class="admin-sb-head">
+          <div style="font-family:'Syne',sans-serif;font-size:.82rem;font-weight:800;margin-bottom:8px">ClubSphere</div>
+          <div class="admin-badge" id="admin-badge">Club</div>
+        </div>
+        <nav class="admin-nav">
+          <button class="admin-nav-btn on" type="button" onclick="switchAdminSec('dashboard',this)"><span>📊</span> Dashboard</button>
+          <button class="admin-nav-btn" type="button" onclick="switchAdminSec('events',this)"><span>📅</span> Events</button>
+          <button class="admin-nav-btn" type="button" onclick="switchAdminSec('announcements',this)"><span>📢</span> Announcements</button>
+          <button class="admin-nav-btn" type="button" onclick="switchAdminSec('gallery',this)"><span>📸</span> Gallery</button>
+          <button class="admin-nav-btn" type="button" onclick="switchAdminSec('registrations',this)"><span>✅</span> Registrations</button>
+          <button class="admin-nav-btn" type="button" onclick="switchAdminSec('members',this)"><span>👥</span> Members</button>
+        </nav>
+        <div class="admin-sb-foot">
+          <div class="admin-sb-uname" id="admin-sb-uname">—</div>
+          <div class="admin-sb-email" id="admin-sb-email">—</div>
+          <button class="admin-sb-out" type="button" onclick="doAdminLogout()">Sign Out</button>
+        </div>
+      </div>
+      <div class="admin-content">
+
+        <!-- DASHBOARD -->
+        <div class="admin-sec on" id="asec-dashboard">
+          <div class="admin-topbar"><div><div class="admin-topbar-t">Dashboard</div><div class="admin-topbar-s" id="adash-sub">Overview</div></div></div>
+          <div class="a-stats">
+            <div class="astat"><div class="astat-n" id="ast-m" style="color:var(--gr)">0</div><div class="astat-l">Members</div></div>
+            <div class="astat"><div class="astat-n" id="ast-e" style="color:var(--code)">0</div><div class="astat-l">Events</div></div>
+            <div class="astat"><div class="astat-n" id="ast-r" style="color:var(--cie)">0</div><div class="astat-l">Registrations</div></div>
+            <div class="astat"><div class="astat-n" id="ast-a" style="color:var(--scope)">0</div><div class="astat-l">Announcements</div></div>
+          </div>
+          <div class="atbl-wrap">
+            <div class="atbl-head"><div class="atbl-title">Recent Registrations</div></div>
+            <table class="atbl"><thead><tr><th>Name</th><th>Event</th><th>Date</th></tr></thead>
+            <tbody id="dash-regs"><tr><td colspan="3" class="empty-row">No registrations yet</td></tr></tbody></table>
+          </div>
+        </div>
+
+        <!-- EVENTS -->
+        <div class="admin-sec" id="asec-events">
+          <div class="admin-topbar"><div><div class="admin-topbar-t">Events</div><div class="admin-topbar-s">Post and manage your club events</div></div></div>
+          <div class="aform">
+            <div class="aform-t">Post New Event</div>
+            <div class="err-msg" id="ev-err"></div>
+            <div class="ok-msg" id="ev-ok"></div>
+            <div class="ag2">
+              <div class="fg"><label>Event Title</label><input type="text" id="ev-ttl" placeholder="e.g. HackSphere 2025"></div>
+              <div class="fg"><label>Venue</label><input type="text" id="ev-ven" placeholder="e.g. Main Auditorium"></div>
+            </div>
+            <div class="ag3">
+              <div class="fg"><label>Date</label><input type="date" id="ev-date"></div>
+              <div class="fg"><label>Prize Pool (₹)</label><input type="number" id="ev-prize" placeholder="15000"></div>
+              <div class="fg"><label>Status</label><select id="ev-status"><option>Open</option><option>Upcoming</option><option>Closing Soon</option></select></div>
+            </div>
+            <div class="fg"><label>Participation</label><select id="ev-part"><option>Individual</option><option>Teams of 2</option><option>Teams of 3-4</option><option>Teams of 2-5</option></select></div>
+            <div class="fg"><label>Description</label><textarea id="ev-desc" rows="3" placeholder="Event details, rules, requirements..."></textarea></div>
+            <button class="btn btn-gr" type="button" style="margin-top:8px" onclick="postEvent()">Post Event →</button>
+          </div>
+          <div class="atbl-wrap">
+            <div class="atbl-head"><div class="atbl-title">Your Events</div><div class="atbl-cnt" id="ev-cnt">0</div></div>
+            <table class="atbl"><thead><tr><th>Title</th><th>Date</th><th>Prize</th><th>Status</th><th></th></tr></thead>
+            <tbody id="ev-tbody"></tbody></table>
+          </div>
+        </div>
+
+        <!-- ANNOUNCEMENTS -->
+        <div class="admin-sec" id="asec-announcements">
+          <div class="admin-topbar"><div><div class="admin-topbar-t">Announcements</div><div class="admin-topbar-s">Post notices visible to all students</div></div></div>
+          <div class="aform">
+            <div class="aform-t">Post Announcement</div>
+            <div class="err-msg" id="ann-err"></div>
+            <div class="ok-msg" id="ann-ok"></div>
+            <div class="fg"><label>Title</label><input type="text" id="ann-ttl" placeholder="e.g. Registration deadline extended"></div>
+            <div class="fg"><label>Message</label><textarea id="ann-body" rows="4" placeholder="Write your announcement..."></textarea></div>
+            <button class="btn btn-gr" type="button" style="margin-top:8px" onclick="postAnn()">Post Announcement →</button>
+          </div>
+          <div class="atbl-wrap">
+            <div class="atbl-head"><div class="atbl-title">Your Announcements</div><div class="atbl-cnt" id="ann-cnt">0</div></div>
+            <table class="atbl"><thead><tr><th>Title</th><th>Message</th><th>Date</th><th></th></tr></thead>
+            <tbody id="ann-tbody"></tbody></table>
+          </div>
+        </div>
+
+        <!-- GALLERY -->
+        <div class="admin-sec" id="asec-gallery">
+          <div class="admin-topbar"><div><div class="admin-topbar-t">Gallery</div><div class="admin-topbar-s">Add photos to the event gallery</div></div></div>
+          <div class="aform">
+            <div class="aform-t">Add Gallery Item</div>
+            <div class="err-msg" id="gal-err"></div>
+            <div class="ok-msg" id="gal-ok"></div>
+            <div class="ag2">
+              <div class="fg"><label>Event Title</label><input type="text" id="gal-ttl" placeholder="e.g. HackSphere 2025"></div>
+              <div class="fg"><label>Subtitle</label><input type="text" id="gal-sub" placeholder="e.g. 48 teams · 200+ participants"></div>
+            </div>
+            <div class="ag2">
+              <div class="fg"><label>Emoji Icon</label><input type="text" id="gal-emoji" placeholder="💻 🎨 🔬 🚀"></div>
+              <div class="fg"><label>Background Color</label><input type="color" id="gal-bg" value="#0a1a12"></div>
+            </div>
+            <button class="btn btn-gr" type="button" style="margin-top:8px" onclick="postGallery()">Add to Gallery →</button>
+          </div>
+          <div class="atbl-wrap">
+            <div class="atbl-head"><div class="atbl-title">Gallery Items</div><div class="atbl-cnt" id="gal-cnt">0</div></div>
+            <table class="atbl"><thead><tr><th>Title</th><th>Subtitle</th><th>Emoji</th><th></th></tr></thead>
+            <tbody id="gal-tbody"></tbody></table>
+          </div>
+        </div>
+
+        <!-- REGISTRATIONS -->
+        <div class="admin-sec" id="asec-registrations">
+          <div class="admin-topbar"><div><div class="admin-topbar-t">Registrations</div><div class="admin-topbar-s">Students who registered for your events</div></div></div>
+          <div class="atbl-wrap">
+            <div class="atbl-head"><div class="atbl-title">All Registrations</div><div class="atbl-cnt" id="reg-cnt">0</div></div>
+            <table class="atbl"><thead><tr><th>Name</th><th>Roll No</th><th>Event</th><th>Dept/Year</th><th>Date</th></tr></thead>
+            <tbody id="reg-tbody"></tbody></table>
+          </div>
+        </div>
+
+        <!-- MEMBERS -->
+        <div class="admin-sec" id="asec-members">
+          <div class="admin-topbar"><div><div class="admin-topbar-t">Club Members</div><div class="admin-topbar-s">Students who joined your club</div></div></div>
+          <div class="atbl-wrap">
+            <div class="atbl-head"><div class="atbl-title">Members</div><div class="atbl-cnt" id="mem-cnt">0</div></div>
+            <table class="atbl"><thead><tr><th>Name</th><th>Roll No</th><th>Email</th><th>Joined</th></tr></thead>
+            <tbody id="mem-tbody"></tbody></table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JOIN MODAL -->
+<div class="modal-bg" id="join-modal">
+  <div class="modal">
+    <div id="jform">
+      <div class="modal-t">Join a Club</div>
+      <div class="modal-s">Fill in your details to register</div>
+      <div class="fg"><label>Full Name</label><input type="text" id="jname" placeholder="e.g. Rahul Kumar"></div>
+      <div class="fg"><label>Roll Number</label><input type="text" id="jroll" placeholder="e.g. 24R21A05XX"></div>
+      <div class="fg"><label>Select Club</label>
+        <select id="jclub"><option value="">-- Choose --</option><option>CAME Club</option><option>Code Club</option><option>SCOPE Club</option><option>CIE #</option></select>
+      </div>
+      <div class="modal-acts">
+        <button class="cancel-btn" type="button" onclick="closeModal('join-modal')">Cancel</button>
+        <button class="btn btn-gr" type="button" style="padding:8px 18px" onclick="submitJoin()">Submit →</button>
+      </div>
+    </div>
+    <div class="succ-msg" id="jsucc">
+      <div class="succ-ico">🎉</div>
+      <h3>You're In!</h3>
+      <p>Registration submitted! You'll receive a confirmation email within 24 hours with further instructions from your club coordinator.</p>
+      <br><button class="btn btn-gr" type="button" style="padding:8px 18px;margin-top:0" onclick="closeModal('join-modal')">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- EVENT REG MODAL -->
+<div class="modal-bg" id="ev-modal">
+  <div class="modal">
+    <div id="evform">
+      <div class="modal-t" id="ev-modal-t">Register for Event</div>
+      <div class="modal-s" id="ev-modal-s">Complete your registration</div>
+      <div class="fg"><label>Full Name</label><input type="text" id="er-name" placeholder="e.g. Rahul Kumar"></div>
+      <div class="fg"><label>Roll Number</label><input type="text" id="er-roll" placeholder="e.g. 24R21A05XX"></div>
+      <div class="fg"><label>MLRIT Email</label><input type="email" id="er-email" placeholder="name@mlrit.ac.in"></div>
+      <div class="fg"><label>Phone</label><input type="tel" id="er-phone" placeholder="9876543210"></div>
+      <div class="fg"><label>Department</label>
+        <select id="er-dept"><option value="">--</option><option>CSE</option><option>IT</option><option>ECE</option><option>EEE</option><option>MECH</option><option>CIVIL</option></select>
+      </div>
+      <div class="fg"><label>Year</label>
+        <select id="er-year"><option value="">--</option><option>1st Year</option><option>2nd Year</option><option>3rd Year</option><option>4th Year</option></select>
+      </div>
+      <div id="er-team-sec">
+        <div class="fg"><label>Team Name</label><input type="text" id="er-team" placeholder="e.g. CodeBusters"></div>
+        <div class="fg"><label>Team Size</label><select id="er-tsize"><option value="">--</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+        <div class="fg"><label>Team Members (Name + Roll)</label><input type="text" id="er-members" placeholder="Priya 05B2, Arjun 05C4"></div>
+      </div>
+      <div class="modal-acts">
+        <button class="cancel-btn" type="button" onclick="closeModal('ev-modal')">Cancel</button>
+        <button class="btn btn-gr" type="button" style="padding:8px 18px" onclick="submitEvReg()">Confirm →</button>
+      </div>
+    </div>
+    <div class="succ-msg" id="evsucc">
+      <div class="succ-ico">✅</div>
+      <h3>You're Registered!</h3>
+      <p>Your spot is confirmed! You'll receive a confirmation email with venue info, schedule, rules, and any payment or further steps required within 24 hours.</p>
+      <br><button class="btn btn-gr" type="button" style="padding:8px 18px;margin-top:0" onclick="closeModal('ev-modal')">Done</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><div class="toast-dot"></div><span id="toast-txt">Done</span></div>
+
+<script>
+// ══════════════════════════════════════
+// SUPABASE
+// ══════════════════════════════════════
+(function(){
+  var s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+  s.onload = function(){
+    window.supa = window.supabase.createClient(
+      'https://kstbniwpzpjdgwlwqvmj.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdGJuaXdwenBqZGd3bHdxdm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNzI3MjMsImV4cCI6MjA4OTY0ODcyM30.QLdIaXwhTw3-CI-2QsuTzfJfUeTfzRUr-4nbof4YO70'
+    );
+    console.log('Supabase ready');
+  };
+  s.onerror = function(){ console.warn('Supabase failed to load'); window.supa = makeFallback(); };
+  document.head.appendChild(s);
+  function makeFallback(){
+    var q={select:function(){return q},insert:function(){return Promise.resolve({data:[],error:null})},delete:function(){return q},update:function(){return q},eq:function(){return q},order:function(){return q},maybeSingle:function(){return Promise.resolve({data:null,error:null})},then:function(cb){return Promise.resolve({data:[],error:null}).then(cb)}};
+    return {from:function(){return q}};
+  }
+})();
+
+// ══════════════════════════════════════
+// DATA
+// ══════════════════════════════════════
+var CLUBS = [
+  {id:'came',icon:'🎨',name:'CAME Club',full:'Creative Arts, Media & Expression',desc:'Photography, videography, graphic design, and cultural expression. Bridges technical education with artistic identity.',tags:['Photography','Design','Media','Cultural'],mem:'120+',ev:'3',prize:'5K+'},
+  {id:'code',icon:'💻',name:'Code Club',full:'Competitive Programming & Development',desc:'Hackathons, DSA contests, open-source sprints, and web development projects. Beginners and pros both welcome.',tags:['Hackathons','DSA','Web Dev','Open Source'],mem:'200+',ev:'4',prize:'18K+'},
+  {id:'scope',icon:'🔬',name:'SCOPE Club',full:'Science, Computing & Engineering',desc:'Coding contests, robotics, IoT builds, research presentations, and Arduino workshops.',tags:['Coding Contests','Robotics','IoT','Research'],mem:'150+',ev:'2',prize:'8K+'},
+  {id:'cie',icon:'🚀',name:'CIE #',full:'Centre for Innovation & Entrepreneurship',desc:'Startup launchpad at MLRIT. Ideation workshops, pitch competitions, mentorship, and investor connect events.',tags:['Startups','Pitching','Ideathon','Mentorship'],mem:'90+',ev:'2',prize:'22K+'}
+];
+var EVENTS = [
+  {club:'code',team:'Teams of 3-4',d:'28',m:'Mar',title:'HackSphere 2025 — 24H Hackathon',meta:'Code Club · Main Auditorium',badge:'b-open',bt:'Open',prize:'₹15,000'},
+  {club:'cie',team:'Individual/Teams',d:'02',m:'Apr',title:'StartUp Pitch Day — Season 3',meta:'CIE # · Seminar Hall A',badge:'b-up',bt:'Upcoming',prize:'₹10,000'},
+  {club:'came',team:'Individual',d:'05',m:'Apr',title:'Pixels & Perspectives — Photography',meta:'CAME Club · Online',badge:'b-open',bt:'Open',prize:'₹5,000'},
+  {club:'scope',team:'Teams of 2',d:'10',m:'Apr',title:'RoboRace — Autonomous Line Follower',meta:'SCOPE Club · Engineering Lab',badge:'b-soon',bt:'Closing Soon',prize:'₹8,000'},
+  {club:'code',team:'Individual',d:'15',m:'Apr',title:'DSA Showdown — Speed Coding Round',meta:'Code Club · Computer Lab 2',badge:'b-up',bt:'Upcoming',prize:'₹3,000'},
+  {club:'cie',team:'Teams of 2-5',d:'20',m:'Apr',title:'Ideathon 2025 — Problem to Product',meta:'CIE # · Innovation Hub',badge:'b-up',bt:'Upcoming',prize:'₹12,000'},
+  {club:'came',team:'Teams of 3-5',d:'25',m:'Apr',title:'Short Film Festival — Campus Stories',meta:'CAME Club · Main Auditorium',badge:'b-up',bt:'Upcoming',prize:'₹4,000'},
+  {club:'scope',team:'Teams of 2-4',d:'28',m:'Apr',title:'IoT Project Showcase 2025',meta:'SCOPE Club · Innovation Hub',badge:'b-up',bt:'Upcoming',prize:'₹6,000'}
+];
+var ANNS_STATIC = [
+  {club:'code',tag:'Code Club',color:'var(--code)',title:'HackSphere registrations close March 25th',body:'Last call to register your teams. Problem statements revealed at opening ceremony.',posted_date:'March 18, 2025'},
+  {club:'cie',tag:'CIE #',color:'var(--cie)',title:'Mentorship sessions every Friday',body:'Weekly sessions with industry experts every Friday at 4 PM in the Innovation Hub.',posted_date:'March 15, 2025'},
+  {club:'came',tag:'CAME Club',color:'var(--came)',title:'New DSLR equipment available',body:'Two DSLR cameras available for rent by registered members.',posted_date:'March 12, 2025'},
+  {club:'scope',tag:'SCOPE Club',color:'var(--scope)',title:'Arduino kits in engineering lab',body:'Members can access Arduino Uno kits and sensor packs from Engineering Lab.',posted_date:'March 10, 2025'},
+  {club:'general',tag:'General',color:'var(--gr)',title:'ClubSphere is now live!',body:'Welcome to ClubSphere — your single destination for all MLRIT club activities.',posted_date:'March 8, 2025'},
+  {club:'code',tag:'Code Club',color:'var(--code)',title:'Weekly LeetCode meetups every Tuesday',body:'LeetCode sessions every Tuesday at 5 PM in Computer Lab 2. All levels welcome.',posted_date:'March 5, 2025'}
+];
+var GALLERY_STATIC = [
+  {club:'code',bg:'#0a1a12',emoji:'💻',title:'HackSphere 2024',sub:'48 teams · 200+ participants'},
+  {club:'came',bg:'#1a0d06',emoji:'🎨',title:'Photography Exhibition',sub:'Annual showcase 2024'},
+  {club:'scope',bg:'#0d0a1a',emoji:'🔬',title:'RoboRace 2024',sub:'20 bots competed'},
+  {club:'cie',bg:'#1a1206',emoji:'🚀',title:'Pitch Day Season 2',sub:'15 startups pitched'},
+  {club:'code',bg:'#0a1a12',emoji:'🏆',title:'DSA Championship',sub:'Top coders of MLRIT'},
+  {club:'came',bg:'#1a0d06',emoji:'🎬',title:'Short Film Fest 2024',sub:'Best of campus stories'},
+  {club:'scope',bg:'#0d0a1a',emoji:'⚙️',title:'IoT Showcase 2024',sub:'Smart systems demo'},
+  {club:'cie',bg:'#1a1206',emoji:'💡',title:'Ideathon Season 2',sub:'Innovation in action'},
+  {club:'code',bg:'#0a1a12',emoji:'🌐',title:'Web Dev Bootcamp',sub:'3-day intensive'}
+];
+var ADMIN_CREDS = {
+  came:{email:'came.coordinator@mlrit.ac.in',pass:'came@admin2025',name:'CAME Coordinator',hex:'#ff6b35'},
+  code:{email:'code.coordinator@mlrit.ac.in',pass:'code@admin2025',name:'Code Club Coordinator',hex:'#00e5a0'},
+  scope:{email:'scope.coordinator@mlrit.ac.in',pass:'scope@admin2025',name:'SCOPE Coordinator',hex:'#b794f4'},
+  cie:{email:'cie.coordinator@mlrit.ac.in',pass:'cie@admin2025',name:'CIE # Coordinator',hex:'#ffc107'}
+};
+var CLUB_NAMES = {came:'CAME Club',code:'Code Club',scope:'SCOPE Club',cie:'CIE #'};
+
+// ══════════════════════════════════════
+// STATE
+// ══════════════════════════════════════
+var CU = null; // current user
+var CA = null; // current admin
+var myClubs = [];
+var myEvents = [];
+
+function ls(k){ try{ return JSON.parse(localStorage.getItem(k)||'null'); }catch(e){ return null; } }
+function lss(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+function lsa(k){ return ls(k)||[]; }
+function db(){ return window.supa; }
+
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+window.onload = function(){
+  CU = ls('cs_user');
+  CA = ls('cs_admin');
+  myClubs = lsa('cs_myclubs');
+  myEvents = lsa('cs_myevents');
+  if(CA){ enterAdmin(); return; }
+  if(CU){ enterStudent(); return; }
+  // role screen already showing
+};
+
+// ══════════════════════════════════════
+// SCREEN NAVIGATION — SIMPLE AND DIRECT
+// ══════════════════════════════════════
+function goTo(id){
+  var all = ['sc-role','sc-slogin','sc-alogin','sc-app','sc-admin'];
+  all.forEach(function(sid){
+    var el = document.getElementById(sid);
+    if(el) el.classList.remove('on');
+  });
+  var target = document.getElementById(id);
+  if(target){ target.classList.add('on'); window.scrollTo(0,0); }
+}
+
+// ══════════════════════════════════════
+// STUDENT AUTH
+// ══════════════════════════════════════
+function doLogin(){
+  var email = document.getElementById('lemail').value.trim().toLowerCase();
+  var pass  = document.getElementById('lpass').value.trim();
+  var err   = document.getElementById('lerr');
+  err.className = 'err-msg';
+
+  if(!email.endsWith('@mlrit.ac.in')){ err.textContent='Only @mlrit.ac.in emails allowed.'; err.className='err-msg show'; return; }
+  if(!pass){ err.textContent='Please enter a password.'; err.className='err-msg show'; return; }
+
+  // Try Supabase first, fallback to localStorage
+  err.textContent='Signing in...'; err.style.color='var(--gr)'; err.className='err-msg show';
+
+  function loginWithLS(){
+    err.className='err-msg'; err.style.color='';
+    var users = lsa('cs_users');
+    var found = null;
+    for(var i=0;i<users.length;i++){ if(users[i].email===email){ found=users[i]; break; } }
+    if(!found){
+      var np=email.split('@')[0];
+      var dn=np.charAt(0).toUpperCase()+np.slice(1).replace(/[._]/g,' ');
+      found={name:dn,email:email,pass:pass,roll:'',year:''};
+      users.push(found); lss('cs_users',users);
+    } else {
+      if(found.pass!==pass){ err.textContent='Incorrect password.'; err.className='err-msg show'; return; }
+    }
+    CU=found; lss('cs_user',found);
+    enterStudent();
+    setTimeout(function(){ toast('Welcome, '+found.name.split(' ')[0]+'!'); },300);
+  }
+
+  var d = db();
+  if(!d){ loginWithLS(); return; }
+
+  d.from('users').select('*').eq('email',email).maybeSingle().then(function(res){
+    err.className='err-msg'; err.style.color='';
+    if(res.error){ loginWithLS(); return; }
+    if(!res.data){
+      var np=email.split('@')[0];
+      var dn=np.charAt(0).toUpperCase()+np.slice(1).replace(/[._]/g,' ');
+      d.from('users').insert([{name:dn,email:email,password:pass,roll_number:'',year:''}]).select().then(function(r){
+        var user = r.error ? {name:dn,email:email,pass:pass,roll:'',year:''} : (r.data[0]||{name:dn,email:email,pass:pass});
+        CU=user; lss('cs_user',user);
+        var allU=lsa('cs_users'); allU.push(user); lss('cs_users',allU);
+        enterStudent();
+        setTimeout(function(){ toast('Welcome, '+dn.split(' ')[0]+'!'); },300);
+      });
+    } else {
+      var storedPass = res.data.password || res.data.pass;
+      if(storedPass && storedPass!==pass){ err.textContent='Incorrect password.'; err.className='err-msg show'; return; }
+      CU=res.data; lss('cs_user',res.data);
+      enterStudent();
+      setTimeout(function(){ toast('Welcome back, '+res.data.name.split(' ')[0]+'!'); },300);
+    }
+  }).catch(function(){ loginWithLS(); });
+}
+
+function enterStudent(){
+  var first=(CU.name||'Student').split(' ')[0];
+  document.getElementById('nav-av').textContent=first.charAt(0).toUpperCase();
+  document.getElementById('nav-un').textContent=first;
+  document.getElementById('d-uname').textContent=CU.name||'Student';
+  document.getElementById('d-email').textContent=CU.email||'';
+  // drawer links
+  var dl=document.getElementById('drawer-links');
+  dl.innerHTML='<a onclick="showPage(\'home\');closeDrawer()">Home</a><a onclick="showPage(\'clubs\');closeDrawer()">Clubs</a><a onclick="showPage(\'events\');closeDrawer()">Events</a><a onclick="showPage(\'announcements\');closeDrawer()">Announcements</a><a onclick="showPage(\'leaderboard\');closeDrawer()">Leaderboard</a><a onclick="showPage(\'gallery\');closeDrawer()">Gallery</a><a onclick="showPage(\'profile\');closeDrawer()">My Profile</a>';
+  goTo('sc-app');
+  showPage('home');
+}
+
+function doLogout(){
+  CU=null; try{ localStorage.removeItem('cs_user'); }catch(e){}
+  goTo('sc-role'); closeDrawer();
+  toast('Signed out');
+}
+
+// ══════════════════════════════════════
+// ADMIN AUTH
+// ══════════════════════════════════════
+function doAdminLogin(){
+  var email = document.getElementById('aemail').value.trim().toLowerCase();
+  var pass  = document.getElementById('apass').value.trim();
+  var club  = document.getElementById('aclub').value;
+  var err   = document.getElementById('aerr');
+  err.className='err-msg';
+
+  if(!email||!pass||!club){ err.textContent='Please fill all fields.'; err.className='err-msg show'; return; }
+  var cred=ADMIN_CREDS[club];
+  if(!cred||email!==cred.email||pass!==cred.pass){ err.textContent='Wrong email or password.'; err.className='err-msg show'; return; }
+
+  CA={email:email,club:club,name:cred.name}; lss('cs_admin',CA);
+  enterAdmin();
+}
+
+function enterAdmin(){
+  var club=CA.club; var cred=ADMIN_CREDS[club];
+  document.getElementById('admin-club-label').textContent=CLUB_NAMES[club];
+  document.getElementById('admin-sb-uname').textContent=CA.name;
+  document.getElementById('admin-sb-email').textContent=CA.email;
+  document.getElementById('adash-sub').textContent=CLUB_NAMES[club]+' Overview';
+  var badge=document.getElementById('admin-badge');
+  badge.textContent=CLUB_NAMES[club];
+  badge.style.borderColor=cred.hex+'55'; badge.style.color=cred.hex; badge.style.background=cred.hex+'12';
+  goTo('sc-admin');
+  loadDash();
+}
+
+function doAdminLogout(){
+  CA=null; try{ localStorage.removeItem('cs_admin'); }catch(e){}
+  goTo('sc-role'); toast('Signed out');
+}
+
+// ══════════════════════════════════════
+// PAGE NAVIGATION (student app)
+// ══════════════════════════════════════
+var curPage='home';
+function showPage(page){
+  curPage=page;
+  ['home','clubs','events','ann','lb','gal'].forEach(function(p){
+    var el=document.getElementById('nl-'+p);
+    if(el) el.className='';
+  });
+  var nlMap={home:'nl-home',clubs:'nl-clubs',events:'nl-events',announcements:'nl-ann',leaderboard:'nl-lb',gallery:'nl-gal'};
+  if(nlMap[page]){ var nl=document.getElementById(nlMap[page]); if(nl) nl.className='on'; }
+  var ap=document.getElementById('app-page');
+  if(page==='home') ap.innerHTML=renderHome();
+  else if(page==='clubs') ap.innerHTML=renderClubs();
+  else if(page==='events') ap.innerHTML=renderEvents();
+  else if(page==='announcements') ap.innerHTML=renderAnn();
+  else if(page==='leaderboard') ap.innerHTML=renderLB();
+  else if(page==='gallery') ap.innerHTML=renderGallery();
+  else if(page==='profile') ap.innerHTML=renderProfile();
+  window.scrollTo(0,0);
+}
+
+// ══════════════════════════════════════
+// RENDER HELPERS
+// ══════════════════════════════════════
+function ft(){
+  return '<footer><div class="f-brand">ClubSphere — MLRIT</div><ul class="f-links"><li><a onclick="showPage(\'clubs\')">Clubs</a></li><li><a onclick="showPage(\'events\')">Events</a></li><li><a onclick="showPage(\'announcements\')">Announcements</a></li><li><a onclick="showPage(\'leaderboard\')">Leaderboard</a></li><li><a onclick="showPage(\'gallery\')">Gallery</a></li></ul><div class="f-copy">© 2025 MLR Institute of Technology · Batch D6</div></footer>';
+}
+
+function renderHome(){
+  var floats=CLUBS.map(function(c){ return '<div class="fc" onclick="showPage(\'clubs\')"><div class="fc-icon">'+c.icon+'</div><div class="fc-name" style="color:var(--'+c.id+')">'+c.name+'</div><div class="fc-sub">'+c.mem+' members</div></div>'; }).join('');
+  var miniC=CLUBS.map(function(c){ return '<div class="cmi '+c.id+'" onclick="showPage(\'clubs\')"><div class="cmi-arr">→</div><div class="cmi-icon">'+c.icon+'</div><div class="cmi-name">'+c.name+'</div><div class="cmi-sub">'+c.full.split('&')[0].trim()+'</div><div class="cmi-mem">'+c.mem+' members</div></div>'; }).join('');
+  var miniE=EVENTS.slice(0,3).map(function(e){ return '<div class="ev-row"><div class="ev-dt"><div class="d">'+e.d+'</div><div class="m">'+e.m+'</div></div><div class="ev-inf"><div class="ev-t">'+e.title+'</div><div class="ev-m">'+e.meta+'</div></div><span class="badge '+e.badge+'">'+e.bt+'</span><div class="ev-pr"><div class="ev-prn">'+e.prize.replace(',000','K')+'</div><div class="ev-prl">Prize</div></div></div>'; }).join('');
+  return '<div class="hero"><div class="hero-glow"></div>'
+    +'<div class="hero-badge"><div class="badge-dot"></div>MLR Institute of Technology</div>'
+    +'<h1>All Your Clubs.<br><span class="accent">One Sphere.</span></h1>'
+    +'<p class="hero-sub">ClubSphere brings every MLRIT student club together — events, hackathons, registrations, and announcements in one place.</p>'
+    +'<div class="hero-acts"><button class="btn btn-gr" onclick="showPage(\'events\')">Browse Events →</button><button class="btn btn-gh" onclick="showPage(\'clubs\')">Explore Clubs</button></div>'
+    +'<div class="h-stats"><div class="h-stat"><div class="h-stat-n">4</div><div class="h-stat-l">Clubs</div></div><div class="h-stat"><div class="h-stat-n">12+</div><div class="h-stat-l">Events</div></div><div class="h-stat"><div class="h-stat-n">500+</div><div class="h-stat-l">Students</div></div><div class="h-stat"><div class="h-stat-n">₹50K+</div><div class="h-stat-l">Prizes</div></div></div>'
+    +'<div class="float-row">'+floats+'</div></div>'
+    +'<section class="sec"><div class="sec-hdr"><div class="lbl">Our Clubs</div><div class="sec-title">Find your community</div><div class="sec-sub">Click any club to learn more</div></div><div class="g4">'+miniC+'</div></section>'
+    +'<div class="divider"></div>'
+    +'<section class="sec"><div class="sec-row"><div><div class="lbl">Upcoming</div><div class="sec-title">Events this month</div></div><button class="btn btn-gh" style="padding:7px 14px;font-size:.78rem" onclick="showPage(\'events\')">View all →</button></div><div id="home-events"><div class="ev-list">'+miniE+'</div></div></section>'
+    +'<div class="divider"></div>'
+    +'<section class="sec"><div class="sec-hdr"><div class="lbl">Platform</div><div class="sec-title">Everything in one place</div></div><div class="g3"><div class="feat"><div class="feat-ico">📍</div><div class="feat-t">Centralized Hub</div><p class="feat-d">One URL for all clubs. No more scattered groups.</p></div><div class="feat"><div class="feat-ico">🔔</div><div class="feat-t">Real-Time Updates</div><p class="feat-d">Events and announcements updated live by organizers.</p></div><div class="feat"><div class="feat-ico">🔐</div><div class="feat-t">MLRIT-Only</div><p class="feat-d">Only @mlrit.ac.in addresses can access ClubSphere.</p></div><div class="feat"><div class="feat-ico">🏆</div><div class="feat-t">Prize Tracking</div><p class="feat-d">View prize pools and results for every event.</p></div><div class="feat"><div class="feat-ico">📸</div><div class="feat-t">Gallery</div><p class="feat-d">Relive past events through our photo gallery.</p></div><div class="feat"><div class="feat-ico">👤</div><div class="feat-t">Your Profile</div><p class="feat-d">Track clubs joined, events registered, and points.</p></div></div></section>'
+    +'<div class="divider"></div>'
+    +'<section class="sec"><div class="cta-box"><h2>Ready to get started?</h2><p>Join a club, register for events, and be part of the ClubSphere community at MLRIT.</p><button class="btn btn-gr" onclick="openJoin()">Join a Club →</button></div></section>'
+    +ft();
+}
+
+function renderClubs(){
+  var cards=CLUBS.map(function(c){
+    var tags=c.tags.map(function(t){ return '<span class="tag">'+t+'</span>'; }).join('');
+    var jc=(c.id==='code'||c.id==='cie')?'var(--gr)':'var(--'+c.id+')';
+    return '<div class="ccard '+c.id+'"><div class="cc-stripe '+c.id+'"></div><div class="cc-top"><div class="cc-ico">'+c.icon+'</div><div><div class="cc-name">'+c.name+'</div><div class="cc-full">'+c.full+'</div><p class="cc-desc">'+c.desc+'</p></div></div><div class="cc-tags">'+tags+'</div><div class="cc-foot"><div class="cc-stats"><div class="cc-stat">members <span>'+c.mem+'</span></div><div class="cc-stat">events <span>'+c.ev+'</span></div><div class="cc-stat">prize <span>₹'+c.prize+'</span></div></div><button class="join-btn" style="background:'+jc+';color:#000" onclick="openJoin()">Join →</button></div></div>';
+  }).join('');
+  return '<div class="pg-hero"><button class="back-btn" onclick="showPage(\'home\')">← Home</button><div class="lbl">All Clubs</div><h1 class="pg-title">Find your community</h1><p class="pg-sub">Four active clubs covering arts, technology, science, and entrepreneurship.</p></div><div class="pg-wrap"><div class="g2">'+cards+'</div></div>'+ft();
+}
+
+function renderEvents(){
+  var rows=EVENTS.map(function(e){
+    return '<div class="evf-row" data-club="'+e.club+'" data-team="'+e.team+'"><div class="evf-dt"><div class="d">'+e.d+'</div><div class="m">'+e.m+'</div></div><div class="evf-info"><div class="evf-t">'+e.title+'</div><div class="evf-m">'+e.meta+'</div></div><div class="evf-r"><span class="badge '+e.badge+'">'+e.bt+'</span><div class="evf-prize">'+e.prize+'</div><div class="evf-prl">Prize Pool</div><button class="reg-btn" onclick="openEvReg(this)">Register</button></div></div>';
+  }).join('');
+  var html='<div class="pg-hero"><button class="back-btn" onclick="showPage(\'home\')">← Home</button><div class="lbl">Calendar</div><h1 class="pg-title">Upcoming events</h1><p class="pg-sub">Hackathons, contests, exhibitions — never miss a moment.</p></div>'
+    +'<div class="pg-wrap"><div class="tabs" id="ev-tabs"><button class="tab on" onclick="evTab(\'all\',this)">All</button><button class="tab" onclick="evTab(\'code\',this)">Code</button><button class="tab" onclick="evTab(\'came\',this)">CAME</button><button class="tab" onclick="evTab(\'scope\',this)">SCOPE</button><button class="tab" onclick="evTab(\'cie\',this)">CIE #</button></div>'
+    +'<div id="ev-all" class="tbc on"><div class="evf-list" id="ev-master">'+rows+'</div></div>'
+    +'<div id="ev-code" class="tbc"></div><div id="ev-came" class="tbc"></div><div id="ev-scope" class="tbc"></div><div id="ev-cie" class="tbc"></div>'
+    +'</div>'+ft();
+  // Load admin events from Supabase
+  setTimeout(function(){
+    var d=db(); if(!d) return;
+    d.from('admin_events').select('*').order('created_at',{ascending:false}).then(function(res){
+      if(!res.data||!res.data.length) return;
+      var master=document.getElementById('ev-master'); if(!master) return;
+      var extra=res.data.map(function(e){
+        return '<div class="evf-row" data-club="'+e.club+'" data-team="'+(e.participation||'Individual')+'"><div class="evf-dt"><div class="d" style="font-size:.62rem">NEW</div><div class="m">EVT</div></div><div class="evf-info"><div class="evf-t">'+e.title+'</div><div class="evf-m">'+CLUB_NAMES[e.club]+' · '+e.venue+'</div></div><div class="evf-r"><span class="badge b-open">'+e.status+'</span><div class="evf-prize">'+(e.prize_pool?'₹'+e.prize_pool:'—')+'</div><div class="evf-prl">Prize</div><button class="reg-btn" onclick="openEvReg(this)">Register</button></div></div>';
+      }).join('');
+      master.innerHTML=extra+master.innerHTML;
+    });
+  },500);
+  return html;
+}
+
+function renderAnn(){
+  var fils='<div class="af on" onclick="fAnn(\'all\',this)">All</div><div class="af" onclick="fAnn(\'code\',this)" style="color:var(--code)">Code</div><div class="af" onclick="fAnn(\'came\',this)" style="color:var(--came)">CAME</div><div class="af" onclick="fAnn(\'scope\',this)" style="color:var(--scope)">SCOPE</div><div class="af" onclick="fAnn(\'cie\',this)" style="color:var(--cie)">CIE #</div><div class="af" onclick="fAnn(\'general\',this)">General</div>';
+  var staticCards=ANNS_STATIC.map(function(a){ return annCard(a); }).join('');
+  var html='<div class="pg-hero"><button class="back-btn" onclick="showPage(\'home\')">← Home</button><div class="lbl">Notice Board</div><h1 class="pg-title">Announcements</h1><p class="pg-sub">All club updates and notices in one place.</p></div>'
+    +'<div class="pg-wrap"><div class="ann-fils">'+fils+'</div><div class="ann-grid" id="ann-grid">'+staticCards+'</div></div>'+ft();
+  setTimeout(function(){
+    var d=db(); if(!d) return;
+    d.from('announcements').select('*').order('created_at',{ascending:false}).then(function(res){
+      if(!res.data||!res.data.length) return;
+      var grid=document.getElementById('ann-grid'); if(!grid) return;
+      var dbCards=res.data.map(function(a){ return annCard(a); }).join('');
+      grid.innerHTML=dbCards+staticCards;
+    });
+  },500);
+  return html;
+}
+
+function annCard(a){
+  var color=a.club==='general'?'var(--gr)':'var(--'+a.club+')';
+  var text=a.body||a.text||'';
+  var date=a.posted_date||a.date||'';
+  return '<div class="ann-card" data-club="'+a.club+'"><div class="ann-tag" style="color:'+color+'">'+a.tag+'</div><div class="ann-title">'+a.title+'</div><p class="ann-text">'+text+'</p><div class="ann-date">'+date+'</div></div>';
+}
+
+function renderGallery(){
+  var fils='<div class="gf on" onclick="fGal(\'all\',this)">All</div><div class="gf" onclick="fGal(\'code\',this)" style="color:var(--code)">Code</div><div class="gf" onclick="fGal(\'came\',this)" style="color:var(--came)">CAME</div><div class="gf" onclick="fGal(\'scope\',this)" style="color:var(--scope)">SCOPE</div><div class="gf" onclick="fGal(\'cie\',this)" style="color:var(--cie)">CIE #</div>';
+  var staticItems=GALLERY_STATIC.map(function(g){ return galItem(g); }).join('');
+  var html='<div class="pg-hero"><button class="back-btn" onclick="showPage(\'home\')">← Home</button><div class="lbl">Past Events</div><h1 class="pg-title">Event Gallery</h1></div>'
+    +'<div class="pg-wrap"><div class="gfil">'+fils+'</div><div class="g3g" id="gal-grid">'+staticItems+'</div></div>'+ft();
+  setTimeout(function(){
+    var d=db(); if(!d) return;
+    d.from('gallery').select('*').order('created_at',{ascending:false}).then(function(res){
+      if(!res.data||!res.data.length) return;
+      var grid=document.getElementById('gal-grid'); if(!grid) return;
+      var dbItems=res.data.map(function(g){ return galItem(g); }).join('');
+      grid.innerHTML=dbItems+staticItems;
+    });
+  },500);
+  return html;
+}
+
+function galItem(g){
+  return '<div class="gal-item" data-club="'+g.club+'"><div class="gal-img" style="background:'+(g.bg||'#0a1a12')+'"><span style="font-size:2.4rem">'+(g.emoji||'📸')+'</span><span style="font-size:.66rem;color:rgba(255,255,255,.35)">'+g.sub+'</span></div><div class="gal-ov"><div class="gal-ot">'+g.title+'</div><div class="gal-os">'+g.sub+'</div></div></div>';
+}
+
+function renderLB(){
+  var rows=[
+    {r:'1',cls:'gld',n:'Priya Sharma',roll:'24R21A05B2',club:'Code Club',cc:'var(--code)',pts:'1,240',b:'2 Wins'},
+    {r:'2',cls:'slv',n:'Arjun Reddy',roll:'24R21A05C4',club:'CIE #',cc:'var(--cie)',pts:'1,095',b:'Finalist'},
+    {r:'3',cls:'brz',n:'Neha Patel',roll:'24R21A05D1',club:'CAME',cc:'var(--came)',pts:'980',b:'Featured'},
+    {r:'4',cls:'',n:'Karthik Rao',roll:'24R21A05E8',club:'SCOPE',cc:'var(--scope)',pts:'870',b:'Builder'},
+    {r:'5',cls:'',n:'Sneha Gupta',roll:'24R21A05A9',club:'Code Club',cc:'var(--code)',pts:'820',b:'Active'},
+    {r:'6',cls:'',n:'Vikram Nair',roll:'24R21A05F2',club:'CIE #',cc:'var(--cie)',pts:'760',b:'Rising'},
+    {r:'7',cls:'',n:'Divya Sharma',roll:'24R21A05G5',club:'SCOPE',cc:'var(--scope)',pts:'710',b:'Engineer'},
+    {r:'8',cls:'',n:'Rohan Das',roll:'24R21A05H1',club:'CAME',cc:'var(--came)',pts:'680',b:'Shooter'}
+  ].map(function(r){ return '<div class="lb-row"><div class="lb-rk '+r.cls+'">'+r.r+'</div><div class="lb-st">'+r.n+'<small>'+r.roll+'</small></div><div class="lb-cl" style="color:'+r.cc+'">'+r.club+'</div><div class="lb-pt">'+r.pts+'</div><div class="lb-bd"><span class="mbadge">'+r.b+'</span></div></div>'; }).join('');
+  return '<div class="pg-hero"><button class="back-btn" onclick="showPage(\'home\')">← Home</button><div class="lbl">Rankings</div><h1 class="pg-title">Leaderboard</h1></div>'
+    +'<div class="pg-wrap"><div class="s4"><div class="scard"><div class="scard-n" style="color:var(--gr)">560+</div><div class="scard-l">Students</div></div><div class="scard"><div class="scard-n" style="color:var(--code)">48</div><div class="scard-l">Events</div></div><div class="scard"><div class="scard-n" style="color:var(--cie)">₹53K+</div><div class="scard-l">Prizes</div></div><div class="scard"><div class="scard-n" style="color:var(--scope)">4</div><div class="scard-l">Clubs</div></div></div>'
+    +'<div class="podium"><div class="pod p2"><div class="pod-medal">🥈</div><div class="pod-name">Arjun Reddy</div><div class="pod-roll">24R21A05C4</div><div class="pod-club" style="color:var(--cie)">CIE #</div><div class="pod-pts">1,095</div><div class="pod-l">pts</div></div><div class="pod p1"><div class="pod-medal">🥇</div><div class="pod-name">Priya Sharma</div><div class="pod-roll">24R21A05B2</div><div class="pod-club" style="color:var(--code)">Code Club</div><div class="pod-pts">1,240</div><div class="pod-l">pts</div></div><div class="pod p3"><div class="pod-medal">🥉</div><div class="pod-name">Neha Patel</div><div class="pod-roll">24R21A05D1</div><div class="pod-club" style="color:var(--came)">CAME</div><div class="pod-pts">980</div><div class="pod-l">pts</div></div></div>'
+    +'<div class="lb-tbl"><div class="lb-hdr"><div>#</div><div>Student</div><div>Club</div><div>Points</div><div>Badges</div></div>'+rows+'</div></div>'+ft();
+}
+
+function renderProfile(){
+  var first=(CU.name||'Student').split(' ')[0];
+  var init=first.charAt(0).toUpperCase();
+  var clubs=myClubs.length?myClubs.map(function(cid){ var c=CLUBS.find(function(x){ return x.id===cid; }); if(!c) return ''; return '<div class="cp"><span style="font-size:1rem">'+c.icon+'</span><div><div style="font-size:.82rem;font-weight:700;color:var(--'+cid+')">'+c.name+'</div><div style="font-size:.7rem;color:var(--tx2)">'+c.mem+' members</div></div></div>'; }).join('') : '<div style="font-size:.78rem;color:var(--tx3)">No clubs yet. <a style="color:var(--gr);cursor:pointer" onclick="openJoin()">Join one →</a></div>';
+  var evs=myEvents.length?myEvents.map(function(e){ return '<div class="ep"><div class="ep-dot"></div><div class="ep-t">'+e.title+'</div><div class="ep-d">'+e.date+'</div></div>'; }).join('') : '<div style="font-size:.78rem;color:var(--tx3)">No events yet. <a style="color:var(--gr);cursor:pointer" onclick="showPage(\'events\')">Browse →</a></div>';
+  return '<div class="pg-hero"><button class="back-btn" onclick="showPage(\'home\')">← Home</button><div class="lbl">My Profile</div></div>'
+    +'<div class="pg-wrap"><div class="prof-top"><div class="prof-av">'+init+'</div><div><div class="prof-name">'+(CU.name||'Student')+'</div><div class="prof-email">'+(CU.email||'')+'</div></div></div>'
+    +'<div class="prof-stats"><div class="ps"><div class="ps-n">'+myClubs.length+'</div><div class="ps-l">Clubs</div></div><div class="ps"><div class="ps-n">'+myEvents.length+'</div><div class="ps-l">Events</div></div><div class="ps"><div class="ps-n">'+(myClubs.length*120+myEvents.length*80)+'</div><div class="ps-l">Points</div></div></div>'
+    +'<div class="prof-grid"><div class="prof-sec"><div class="prof-sec-t">My Clubs</div>'+clubs+'</div><div class="prof-sec"><div class="prof-sec-t">Registered Events</div>'+evs+'</div></div></div>'+ft();
+}
+
+// ══════════════════════════════════════
+// FILTERS & TABS
+// ══════════════════════════════════════
+function evTab(name,btn){
+  document.querySelectorAll('#ev-tabs .tab').forEach(function(b){ b.className='tab'; });
+  document.querySelectorAll('.tbc').forEach(function(c){ c.className='tbc'; });
+  btn.className='tab on';
+  if(name==='all'){ document.getElementById('ev-all').className='tbc on'; return; }
+  var rows=document.querySelectorAll('#ev-master .evf-row');
+  var tgt=document.getElementById('ev-'+name); tgt.innerHTML='<div class="evf-list"></div>';
+  var w=tgt.querySelector('.evf-list');
+  rows.forEach(function(r){ if(r.dataset.club===name) w.appendChild(r.cloneNode(true)); });
+  if(!w.children.length) w.innerHTML='<div style="padding:28px;text-align:center;color:var(--tx3)">No events for this club yet</div>';
+  tgt.className='tbc on';
+}
+function fAnn(club,btn){
+  document.querySelectorAll('.af').forEach(function(f){ f.className='af'; });
+  btn.className='af on';
+  document.querySelectorAll('#ann-grid .ann-card').forEach(function(c){ c.style.display=(club==='all'||c.dataset.club===club)?'':'none'; });
+}
+function fGal(club,btn){
+  document.querySelectorAll('.gf').forEach(function(f){ f.className='gf'; });
+  btn.className='gf on';
+  document.querySelectorAll('#gal-grid .gal-item').forEach(function(c){ c.style.display=(club==='all'||c.dataset.club===club)?'':'none'; });
+}
+
+// ══════════════════════════════════════
+// MODALS
+// ══════════════════════════════════════
+function openJoin(){
+  document.getElementById('jform').style.display='block';
+  document.getElementById('jsucc').style.display='none';
+  if(CU){ document.getElementById('jname').value=CU.name||''; }
+  document.getElementById('join-modal').className='modal-bg on';
+}
+function openEvReg(btn){
+  var row=btn.closest('.evf-row');
+  var title=row.querySelector('.evf-t').textContent;
+  var team=row.dataset.team||'Individual';
+  var isTeam=team.toLowerCase().indexOf('team')!==-1&&team!=='Individual';
+  document.getElementById('ev-modal-t').textContent='Register: '+title;
+  document.getElementById('ev-modal-s').textContent='Participation: '+team;
+  document.getElementById('er-team-sec').style.display=isTeam?'block':'none';
+  document.getElementById('evform').style.display='block';
+  document.getElementById('evsucc').style.display='none';
+  if(CU){ document.getElementById('er-name').value=CU.name||''; document.getElementById('er-email').value=CU.email||''; }
+  window._curEv=title; window._curEvClub=row.dataset.club||'code';
+  document.getElementById('ev-modal').className='modal-bg on';
+}
+function closeModal(id){ document.getElementById(id).className='modal-bg'; }
+document.addEventListener('click',function(e){ if(e.target.classList&&e.target.classList.contains('modal-bg')){ e.target.className='modal-bg'; } });
+
+function submitJoin(){
+  var n=document.getElementById('jname').value.trim();
+  var r=document.getElementById('jroll').value.trim();
+  var c=document.getElementById('jclub').value;
+  if(!n||!r||!c){ toast('Please fill all fields'); return; }
+  var cid=''; if(c.includes('CAME')) cid='came'; else if(c.includes('Code')) cid='code'; else if(c.includes('SCOPE')) cid='scope'; else cid='cie';
+  if(myClubs.indexOf(cid)===-1){ myClubs.push(cid); lss('cs_myclubs',myClubs); }
+  var email=CU?CU.email:'';
+  var date=new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+  var mems=lsa('cs_members_'+cid);
+  if(!mems.find(function(m){ return m.email===email; })){ mems.push({name:n,roll:r,email:email,date:date}); lss('cs_members_'+cid,mems); }
+  var d=db();
+  if(d) d.from('club_registrations').insert([{user_name:n,roll_number:r,email:email,club:c}]).then(function(res){ if(res.error) console.warn('club_reg error:',res.error.message); });
+  document.getElementById('jform').style.display='none';
+  document.getElementById('jsucc').style.display='block';
+  toast('Club registration submitted!');
+}
+
+function submitEvReg(){
+  var n=document.getElementById('er-name').value.trim();
+  var r=document.getElementById('er-roll').value.trim();
+  var em=document.getElementById('er-email').value.trim();
+  var ph=document.getElementById('er-phone').value.trim();
+  var dept=document.getElementById('er-dept').value;
+  var yr=document.getElementById('er-year').value;
+  if(!n||!r||!em||!ph||!dept||!yr){ toast('Please fill all required fields'); return; }
+  if(!em.endsWith('@mlrit.ac.in')){ toast('Use your @mlrit.ac.in email'); return; }
+  var team=document.getElementById('er-team').value.trim();
+  var tsize=document.getElementById('er-tsize').value;
+  var tmem=document.getElementById('er-members').value.trim();
+  var date=new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+  var entry={title:window._curEv||'Event',date:date};
+  if(!myEvents.find(function(e){ return e.title===entry.title; })){ myEvents.push(entry); lss('cs_myevents',myEvents); }
+  var club=window._curEvClub||'code';
+  var regs=lsa('cs_regs_'+club);
+  regs.push({name:n,roll_number:r,email:em,phone:ph,department:dept,year:yr,event_title:entry.title,team_name:team,team_size:tsize,team_members:tmem,date:date});
+  lss('cs_regs_'+club,regs);
+  var d=db();
+  if(d) d.from('event_registrations').insert([{event_title:entry.title,name:n,roll_number:r,email:em,phone:ph,department:dept,year:yr,team_name:team||null,team_size:tsize||null,team_members:tmem||null}]).then(function(res){ if(res.error) console.warn('ev_reg error:',res.error.message); });
+  document.getElementById('evform').style.display='none';
+  document.getElementById('evsucc').style.display='block';
+  toast('Registration confirmed!');
+}
+
+// ══════════════════════════════════════
+// ADMIN SECTIONS
+// ══════════════════════════════════════
+function switchAdminSec(sec,btn){
+  document.querySelectorAll('.admin-nav-btn').forEach(function(b){ b.className='admin-nav-btn'; });
+  document.querySelectorAll('.admin-sec').forEach(function(s){ s.className='admin-sec'; });
+  btn.className='admin-nav-btn on';
+  document.getElementById('asec-'+sec).className='admin-sec on';
+  if(sec==='dashboard') loadDash();
+  else if(sec==='events') loadEvs();
+  else if(sec==='announcements') loadAnns();
+  else if(sec==='gallery') loadGal();
+  else if(sec==='registrations') loadRegs();
+  else if(sec==='members') loadMems();
+}
+
+function loadDash(){
+  var club=CA.club;
+  var mems=lsa('cs_members_'+club).length;
+  var evs=lsa('cs_events_'+club).length;
+  var regs=lsa('cs_regs_'+club).length;
+  var anns=lsa('cs_anns_'+club).length;
+  document.getElementById('ast-m').textContent=mems;
+  document.getElementById('ast-e').textContent=evs;
+  document.getElementById('ast-r').textContent=regs;
+  document.getElementById('ast-a').textContent=anns;
+  var tbody=document.getElementById('dash-regs');
+  var allRegs=lsa('cs_regs_'+club);
+  if(!allRegs.length){ tbody.innerHTML='<tr><td colspan="3" class="empty-row">No registrations yet</td></tr>'; return; }
+  tbody.innerHTML=allRegs.slice(0,5).map(function(x){ return '<tr><td>'+x.name+'<small>'+x.roll_number+'</small></td><td>'+x.event_title+'</td><td>'+x.date+'</td></tr>'; }).join('');
+}
+
+function loadEvs(){
+  var evs=lsa('cs_events_'+CA.club);
+  var tbody=document.getElementById('ev-tbody');
+  document.getElementById('ev-cnt').textContent=evs.length;
+  if(!evs.length){ tbody.innerHTML='<tr><td colspan="5" class="empty-row">No events posted yet</td></tr>'; return; }
+  tbody.innerHTML=evs.map(function(e){ var sc=e.status==='Open'?'open':'up'; return '<tr><td>'+e.title+'<small>'+e.venue+'</small></td><td>'+e.event_date+'</td><td>'+(e.prize_pool?'₹'+e.prize_pool:'—')+'</td><td><span class="abadge '+sc+'">'+e.status+'</span></td><td><button class="del-btn" onclick="delEv(\''+e.id+'\')">🗑</button></td></tr>'; }).join('');
+}
+
+function loadAnns(){
+  var anns=lsa('cs_anns_'+CA.club);
+  var tbody=document.getElementById('ann-tbody');
+  document.getElementById('ann-cnt').textContent=anns.length;
+  if(!anns.length){ tbody.innerHTML='<tr><td colspan="4" class="empty-row">No announcements yet</td></tr>'; return; }
+  tbody.innerHTML=anns.map(function(a){ return '<tr><td><strong>'+a.title+'</strong></td><td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+a.body+'</td><td>'+a.posted_date+'</td><td><button class="del-btn" onclick="delAnn(\''+a.id+'\')">🗑</button></td></tr>'; }).join('');
+}
+
+function loadGal(){
+  var gals=lsa('cs_gal_'+CA.club);
+  var tbody=document.getElementById('gal-tbody');
+  document.getElementById('gal-cnt').textContent=gals.length;
+  if(!gals.length){ tbody.innerHTML='<tr><td colspan="4" class="empty-row">No gallery items yet</td></tr>'; return; }
+  tbody.innerHTML=gals.map(function(g){ return '<tr><td>'+g.title+'</td><td>'+g.sub+'</td><td>'+g.emoji+'</td><td><button class="del-btn" onclick="delGal(\''+g.id+'\')">🗑</button></td></tr>'; }).join('');
+}
+
+function loadRegs(){
+  var regs=lsa('cs_regs_'+CA.club);
+  var tbody=document.getElementById('reg-tbody');
+  document.getElementById('reg-cnt').textContent=regs.length;
+  if(!regs.length){ tbody.innerHTML='<tr><td colspan="5" class="empty-row">No registrations yet</td></tr>'; return; }
+  tbody.innerHTML=regs.map(function(x){ return '<tr><td>'+x.name+'<small>'+x.email+'</small></td><td>'+x.roll_number+'</td><td>'+x.event_title+'</td><td>'+x.department+'/'+x.year+'</td><td>'+x.date+'</td></tr>'; }).join('');
+}
+
+function loadMems(){
+  var mems=lsa('cs_members_'+CA.club);
+  var tbody=document.getElementById('mem-tbody');
+  document.getElementById('mem-cnt').textContent=mems.length;
+  if(!mems.length){ tbody.innerHTML='<tr><td colspan="4" class="empty-row">No members yet</td></tr>'; return; }
+  tbody.innerHTML=mems.map(function(m){ return '<tr><td>'+m.name+'</td><td>'+m.roll+'</td><td style="font-size:.72rem">'+m.email+'</td><td>'+m.date+'</td></tr>'; }).join('');
+}
+
+// ══════════════════════════════════════
+// ADMIN POST FUNCTIONS
+// ══════════════════════════════════════
+function postEvent(){
+  var ttl=document.getElementById('ev-ttl').value.trim();
+  var ven=document.getElementById('ev-ven').value.trim();
+  var date=document.getElementById('ev-date').value;
+  var prize=document.getElementById('ev-prize').value;
+  var status=document.getElementById('ev-status').value;
+  var part=document.getElementById('ev-part').value;
+  var desc=document.getElementById('ev-desc').value.trim();
+  var err=document.getElementById('ev-err'); var ok=document.getElementById('ev-ok');
+  err.className='err-msg'; ok.className='ok-msg';
+  if(!ttl||!ven||!date){ err.textContent='Fill title, venue and date.'; err.className='err-msg show'; return; }
+  var ev={id:Date.now().toString(),club:CA.club,title:ttl,venue:ven,event_date:date,prize_pool:prize,participation:part,description:desc,status:status};
+  var evs=lsa('cs_events_'+CA.club); evs.push(ev); lss('cs_events_'+CA.club,evs);
+  var gev=lsa('cs_posted_events'); gev.push(ev); lss('cs_posted_events',gev);
+  var d=db();
+  if(d) d.from('admin_events').insert([{club:ev.club,title:ev.title,venue:ev.venue,event_date:ev.event_date||null,prize_pool:ev.prize_pool||null,participation:ev.participation,description:ev.description,status:ev.status}]).then(function(res){ if(res.error) console.warn('admin_ev error:',res.error.message); else console.log('Event saved to Supabase'); });
+  ok.textContent='✓ Event posted!'; ok.className='ok-msg show';
+  document.getElementById('ev-ttl').value=''; document.getElementById('ev-ven').value=''; document.getElementById('ev-date').value=''; document.getElementById('ev-prize').value=''; document.getElementById('ev-desc').value='';
+  setTimeout(function(){ ok.className='ok-msg'; },3000);
+  loadEvs(); loadDash(); toast('Event posted!');
+}
+
+function postAnn(){
+  var ttl=document.getElementById('ann-ttl').value.trim();
+  var body=document.getElementById('ann-body').value.trim();
+  var err=document.getElementById('ann-err'); var ok=document.getElementById('ann-ok');
+  err.className='err-msg'; ok.className='ok-msg';
+  if(!ttl||!body){ err.textContent='Fill title and message.'; err.className='err-msg show'; return; }
+  var now=new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
+  var ann={id:Date.now().toString(),club:CA.club,tag:CLUB_NAMES[CA.club],title:ttl,body:body,posted_date:now};
+  var anns=lsa('cs_anns_'+CA.club); anns.push(ann); lss('cs_anns_'+CA.club,anns);
+  var ga=lsa('cs_posted_anns'); ga.push(ann); lss('cs_posted_anns',ga);
+  var d=db();
+  if(d) d.from('announcements').insert([{club:ann.club,tag:ann.tag,title:ann.title,body:ann.body,posted_date:ann.posted_date}]).then(function(res){ if(res.error) console.warn('ann error:',res.error.message); else console.log('Announcement saved to Supabase'); });
+  ok.textContent='✓ Announcement posted!'; ok.className='ok-msg show';
+  document.getElementById('ann-ttl').value=''; document.getElementById('ann-body').value='';
+  setTimeout(function(){ ok.className='ok-msg'; },3000);
+  loadAnns(); loadDash(); toast('Announcement posted!');
+}
+
+function postGallery(){
+  var ttl=document.getElementById('gal-ttl').value.trim();
+  var sub=document.getElementById('gal-sub').value.trim();
+  var emoji=document.getElementById('gal-emoji').value.trim();
+  var bg=document.getElementById('gal-bg').value;
+  var err=document.getElementById('gal-err'); var ok=document.getElementById('gal-ok');
+  err.className='err-msg'; ok.className='ok-msg';
+  if(!ttl||!sub){ err.textContent='Fill title and subtitle.'; err.className='err-msg show'; return; }
+  var g={id:Date.now().toString(),club:CA.club,title:ttl,sub:sub,emoji:emoji||'📸',bg:bg};
+  var gals=lsa('cs_gal_'+CA.club); gals.push(g); lss('cs_gal_'+CA.club,gals);
+  var d=db();
+  if(d) d.from('gallery').insert([{club:g.club,title:g.title,sub:g.sub,emoji:g.emoji,bg:g.bg}]).then(function(res){ if(res.error) console.warn('gallery error:',res.error.message); else console.log('Gallery item saved to Supabase'); });
+  ok.textContent='✓ Added to gallery!'; ok.className='ok-msg show';
+  document.getElementById('gal-ttl').value=''; document.getElementById('gal-sub').value=''; document.getElementById('gal-emoji').value='';
+  setTimeout(function(){ ok.className='ok-msg'; },3000);
+  loadGal(); toast('Gallery item added!');
+}
+
+function delEv(id){
+  if(!confirm('Delete this event?')) return;
+  var evs=lsa('cs_events_'+CA.club).filter(function(e){ return e.id!==id; }); lss('cs_events_'+CA.club,evs);
+  var gev=lsa('cs_posted_events').filter(function(e){ return e.id!==id; }); lss('cs_posted_events',gev);
+  loadEvs(); loadDash(); toast('Deleted');
+}
+function delAnn(id){
+  if(!confirm('Delete?')) return;
+  var anns=lsa('cs_anns_'+CA.club).filter(function(a){ return a.id!==id; }); lss('cs_anns_'+CA.club,anns);
+  var ga=lsa('cs_posted_anns').filter(function(a){ return a.id!==id; }); lss('cs_posted_anns',ga);
+  loadAnns(); loadDash(); toast('Deleted');
+}
+function delGal(id){
+  if(!confirm('Delete?')) return;
+  var gals=lsa('cs_gal_'+CA.club).filter(function(g){ return g.id!==id; }); lss('cs_gal_'+CA.club,gals);
+  loadGal(); toast('Deleted');
+}
+
+// ══════════════════════════════════════
+// DRAWER
+// ══════════════════════════════════════
+function openDrawer(){ document.getElementById('dov').className='drawer-ov on'; document.getElementById('drawer').className='drawer on'; }
+function closeDrawer(){ document.getElementById('dov').className='drawer-ov'; document.getElementById('drawer').className='drawer'; }
+
+// ══════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════
+function toast(msg){
+  document.getElementById('toast-txt').textContent=msg;
+  var t=document.getElementById('toast'); t.className='toast on';
+  setTimeout(function(){ t.className='toast'; },3000);
+}
+</script>
+</body>
+</html>
